@@ -1,0 +1,960 @@
+objects:
+  get:
+    tags:
+      - Objects
+    summary: List objects
+    description: |
+      Retrieve a list of objects in the virtual world with optional filtering.
+      Users can only see objects they have permission to examine.
+    operationId: listObjects
+    parameters:
+      - name: type
+        in: query
+        description: Filter by object type
+        required: false
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectType'
+      - name: owner
+        in: query
+        description: Filter by owner ID
+        required: false
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+      - name: location
+        in: query
+        description: Filter by location ID
+        required: false
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+      - name: search
+        in: query
+        description: Search objects by name
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: limit
+        in: query
+        description: Items per page
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    responses:
+      '200':
+        description: List of objects
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                        - $ref: '../schemas/common.yaml#/components/schemas/PaginatedResponse'
+                        - type: object
+                          properties:
+                            data:
+                              type: array
+                              items:
+                                $ref: '../schemas/common.yaml#/components/schemas/VirtualObject'
+            examples:
+              object_list:
+                summary: List of objects
+                value:
+                  success: true
+                  data:
+                    data:
+                      - id: 12345
+                        name: "Central Plaza"
+                        type: "room"
+                        owner: 1001
+                        description: "A grand central plaza surrounded by towering buildings"
+                        flags: ["LINK_OK", "ENTER_OK"]
+                        created: "2024-01-01T00:00:00Z"
+                        modified: "2024-01-15T10:30:00Z"
+                      - id: 12346
+                        name: "A magic sword"
+                        type: "thing"
+                        owner: 1002
+                        location: 12345
+                        description: "A gleaming sword that hums with magical energy"
+                        flags: ["STICKY"]
+                        value: 500
+                        created: "2024-01-10T14:20:00Z"
+                        modified: "2024-01-10T14:20:00Z"
+                    pagination:
+                      page: 1
+                      limit: 20
+                      total: 2
+                      totalPages: 1
+                      hasNext: false
+                      hasPrevious: false
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+  post:
+    tags:
+      - Objects
+    summary: Create new object
+    description: |
+      Create a new object in the virtual world. Users must have appropriate
+      permissions and available quota to create objects.
+    operationId: createObject
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - type
+            properties:
+              name:
+                type: string
+                description: Object name
+              type:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectType'
+              description:
+                type: string
+                description: Object description
+              location:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+              flags:
+                type: array
+                items:
+                  type: string
+                description: Object flags
+              attributes:
+                type: object
+                additionalProperties:
+                  type: string
+                description: Initial attributes
+          examples:
+            create_thing:
+              summary: Create a new thing
+              value:
+                name: "A mysterious orb"
+                type: "thing"
+                description: "A glowing orb that pulses with inner light"
+                location: 12345
+                flags: ["STICKY"]
+                attributes:
+                  color: "blue"
+                  material: "crystal"
+            create_room:
+              summary: Create a new room
+              value:
+                name: "Ancient Library"
+                type: "room"
+                description: "A vast library filled with ancient tomes and scrolls"
+                flags: ["LINK_OK", "ENTER_OK"]
+                attributes:
+                  climate: "cool"
+                  lighting: "dim"
+    responses:
+      '201':
+        description: Object created successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/VirtualObject'
+            examples:
+              object_created:
+                summary: Object created
+                value:
+                  success: true
+                  data:
+                    id: 12347
+                    name: "A mysterious orb"
+                    type: "thing"
+                    owner: 1002
+                    location: 12345
+                    description: "A glowing orb that pulses with inner light"
+                    flags: ["STICKY"]
+                    attributes:
+                      color: "blue"
+                      material: "crystal"
+                    created: "2024-12-12T15:57:00Z"
+                    modified: "2024-12-12T15:57:00Z"
+                    value: 10
+                  timestamp: "2024-12-12T15:57:00Z"
+      '400':
+        description: Invalid object data
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions or quota exceeded
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+objects_by_id:
+  get:
+    tags:
+      - Objects
+    summary: Get object by ID
+    description: |
+      Retrieve detailed information about a specific object.
+      Users can only examine objects they have permission to see.
+    operationId: getObjectById
+    parameters:
+      - name: objectId
+        in: path
+        description: Object ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Object details
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/VirtualObject'
+            examples:
+              object_details:
+                summary: Object details
+                value:
+                  success: true
+                  data:
+                    id: 12345
+                    name: "Central Plaza"
+                    type: "room"
+                    owner: 1001
+                    description: "A grand central plaza surrounded by towering buildings"
+                    shortDescription: "Central Plaza"
+                    flags: ["LINK_OK", "ENTER_OK"]
+                    attributes:
+                      climate: "temperate"
+                      lighting: "bright"
+                      capacity: "100"
+                    created: "2024-01-01T00:00:00Z"
+                    modified: "2024-01-15T10:30:00Z"
+                    value: 0
+                    locks:
+                      enter: "=*"
+                      use: "=*"
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to examine object
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+  patch:
+    tags:
+      - Objects
+    summary: Update object
+    description: |
+      Update an object's properties. Users can only modify objects they own
+      or have appropriate permissions to modify.
+    operationId: updateObject
+    parameters:
+      - name: objectId
+        in: path
+        description: Object ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Object name
+              description:
+                type: string
+                description: Object description
+              shortDescription:
+                type: string
+                description: Brief description
+              flags:
+                type: array
+                items:
+                  type: string
+                description: Object flags
+              locks:
+                type: object
+                additionalProperties:
+                  type: string
+                description: Access control locks
+          examples:
+            update_description:
+              summary: Update object description
+              value:
+                description: "A grand central plaza surrounded by towering buildings. Evening light casts long shadows across the cobblestones."
+                shortDescription: "Central Plaza (Evening)"
+                flags: ["LINK_OK", "ENTER_OK", "QUIET"]
+    responses:
+      '200':
+        description: Object updated successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/VirtualObject'
+      '400':
+        description: Invalid update data
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to modify object
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+  delete:
+    tags:
+      - Objects
+    summary: Delete object
+    description: |
+      Delete an object from the virtual world. Users can only delete objects
+      they own or have appropriate permissions to destroy.
+    operationId: deleteObject
+    parameters:
+      - name: objectId
+        in: path
+        description: Object ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Object deleted successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "Object deleted successfully"
+                        refund:
+                          type: integer
+                          description: Credits refunded to owner
+            examples:
+              object_deleted:
+                summary: Object deleted
+                value:
+                  success: true
+                  data:
+                    message: "Object deleted successfully"
+                    refund: 5
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to delete object
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '409':
+        description: Cannot delete object (has contents or dependencies)
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+objects_attributes:
+  get:
+    tags:
+      - Objects
+    summary: Get object attributes
+    description: |
+      Retrieve all attributes for a specific object.
+      Users can only view attributes they have permission to see.
+    operationId: getObjectAttributes
+    parameters:
+      - name: objectId
+        in: path
+        description: Object ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Object attributes
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        objectId:
+                          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+                        attributes:
+                          type: object
+                          additionalProperties:
+                            $ref: '../schemas/common.yaml#/components/schemas/Attribute'
+            examples:
+              object_attributes:
+                summary: Object attributes
+                value:
+                  success: true
+                  data:
+                    objectId: 12345
+                    attributes:
+                      climate:
+                        name: "climate"
+                        value: "temperate"
+                        type: "string"
+                        flags: ["inherit"]
+                        owner: 1001
+                        created: "2024-01-01T00:00:00Z"
+                        modified: "2024-01-15T10:30:00Z"
+                      lighting:
+                        name: "lighting"
+                        value: "bright"
+                        type: "string"
+                        flags: []
+                        owner: 1001
+                        created: "2024-01-01T00:00:00Z"
+                        modified: "2024-01-01T00:00:00Z"
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to view attributes
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+  post:
+    tags:
+      - Objects
+    summary: Set object attributes
+    description: |
+      Set one or more attributes on an object. Users can only set attributes
+      on objects they own or have appropriate permissions to modify.
+    operationId: setObjectAttributes
+    parameters:
+      - name: objectId
+        in: path
+        description: Object ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              attributes:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    value:
+                      type: string
+                      description: Attribute value
+                    type:
+                      type: string
+                      enum: [string, integer, boolean, reference]
+                      description: Attribute type
+                    flags:
+                      type: array
+                      items:
+                        type: string
+                      description: Attribute flags
+          examples:
+            set_attributes:
+              summary: Set object attributes
+              value:
+                attributes:
+                  temperature:
+                    value: "warm"
+                    type: "string"
+                    flags: ["inherit"]
+                  population:
+                    value: "50"
+                    type: "integer"
+                    flags: []
+    responses:
+      '200':
+        description: Attributes set successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        objectId:
+                          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+                        attributes:
+                          type: object
+                          additionalProperties:
+                            $ref: '../schemas/common.yaml#/components/schemas/Attribute'
+      '400':
+        description: Invalid attribute data
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to set attributes
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+objects_attribute_by_name:
+  get:
+    tags:
+      - Objects
+    summary: Get specific object attribute
+    description: |
+      Retrieve a specific attribute value for an object.
+    operationId: getObjectAttribute
+    parameters:
+      - name: objectId
+        in: path
+        description: Object ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+      - name: attributeName
+        in: path
+        description: Attribute name
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Attribute value
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/Attribute'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to view attribute
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object or attribute not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+  put:
+    tags:
+      - Objects
+    summary: Set specific object attribute
+    description: |
+      Set a specific attribute value for an object.
+    operationId: setObjectAttribute
+    parameters:
+      - name: objectId
+        in: path
+        description: Object ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+      - name: attributeName
+        in: path
+        description: Attribute name
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - value
+            properties:
+              value:
+                type: string
+                description: Attribute value
+              type:
+                type: string
+                enum: [string, integer, boolean, reference]
+                description: Attribute type
+              flags:
+                type: array
+                items:
+                  type: string
+                description: Attribute flags
+    responses:
+      '200':
+        description: Attribute set successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/Attribute'
+      '400':
+        description: Invalid attribute data
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to set attribute
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+  delete:
+    tags:
+      - Objects
+    summary: Delete specific object attribute
+    description: |
+      Remove a specific attribute from an object.
+    operationId: deleteObjectAttribute
+    parameters:
+      - name: objectId
+        in: path
+        description: Object ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+      - name: attributeName
+        in: path
+        description: Attribute name
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Attribute deleted successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "Attribute deleted successfully"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to delete attribute
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object or attribute not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+objects_contents:
+  get:
+    tags:
+      - Objects
+    summary: Get object contents
+    description: |
+      Retrieve the contents (objects contained within) of a specific object.
+      Typically used for rooms and containers.
+    operationId: getObjectContents
+    parameters:
+      - name: objectId
+        in: path
+        description: Object ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Object contents
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        objectId:
+                          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+                        contents:
+                          type: array
+                          items:
+                            $ref: '../schemas/common.yaml#/components/schemas/VirtualObject'
+            examples:
+              object_contents:
+                summary: Object contents
+                value:
+                  success: true
+                  data:
+                    objectId: 12345
+                    contents:
+                      - id: 1001
+                        name: "Gandalf"
+                        type: "player"
+                        owner: 1001
+                        description: "A wise wizard with a long beard"
+                        location: 12345
+                      - id: 12346
+                        name: "A magic sword"
+                        type: "thing"
+                        owner: 1002
+                        description: "A gleaming sword that hums with magical energy"
+                        location: 12345
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to view contents
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+objects_exits:
+  get:
+    tags:
+      - Objects
+    summary: Get object exits
+    description: |
+      Retrieve the exits (exit objects) from a specific object.
+      Typically used for rooms.
+    operationId: getObjectExits
+    parameters:
+      - name: objectId
+        in: path
+        description: Object ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Object exits
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        objectId:
+                          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+                        exits:
+                          type: array
+                          items:
+                            $ref: '../schemas/common.yaml#/components/schemas/Exit'
+            examples:
+              object_exits:
+                summary: Object exits
+                value:
+                  success: true
+                  data:
+                    objectId: 12345
+                    exits:
+                      - id: 12348
+                        name: "north"
+                        type: "exit"
+                        owner: 1001
+                        source: 12345
+                        destination: 12349
+                        direction: "north"
+                        aliases: ["n"]
+                        description: "A path leading north to the gardens"
+                      - id: 12350
+                        name: "east"
+                        type: "exit"
+                        owner: 1001
+                        source: 12345
+                        destination: 12351
+                        direction: "east"
+                        aliases: ["e"]
+                        description: "An archway opening to the east"
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to view exits
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'

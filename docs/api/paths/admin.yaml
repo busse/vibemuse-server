@@ -1,0 +1,393 @@
+admin_stats:
+  get:
+    tags:
+      - Administration
+    summary: Get server statistics
+    description: |
+      Retrieve comprehensive server statistics including user counts,
+      object counts, and performance metrics.
+    operationId: getServerStats
+    responses:
+      '200':
+        description: Server statistics
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        users:
+                          type: object
+                          properties:
+                            total:
+                              type: integer
+                            online:
+                              type: integer
+                            byClass:
+                              type: object
+                              additionalProperties:
+                                type: integer
+                        objects:
+                          type: object
+                          properties:
+                            total:
+                              type: integer
+                            byType:
+                              type: object
+                              additionalProperties:
+                                type: integer
+                            recycled:
+                              type: integer
+                        database:
+                          type: object
+                          properties:
+                            size:
+                              type: integer
+                            lastDump:
+                              type: string
+                              format: date-time
+                            integrity:
+                              type: string
+                              enum: [good, warning, error]
+                        server:
+                          type: object
+                          properties:
+                            uptime:
+                              type: integer
+                            memoryUsage:
+                              type: integer
+                            cpuUsage:
+                              type: number
+                            connections:
+                              type: integer
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+admin_database_dump:
+  post:
+    tags:
+      - Administration
+    summary: Trigger database dump
+    description: |
+      Manually trigger a database dump to disk. Requires admin permissions.
+    operationId: dumpDatabase
+    responses:
+      '200':
+        description: Database dump initiated
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "Database dump initiated"
+                        dumpId:
+                          type: string
+                          description: Dump operation ID
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '409':
+        description: Database dump already in progress
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+admin_database_integrity:
+  post:
+    tags:
+      - Administration
+    summary: Check database integrity
+    description: |
+      Perform a database integrity check. Requires admin permissions.
+    operationId: checkDatabaseIntegrity
+    responses:
+      '200':
+        description: Database integrity check completed
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                          enum: [good, warning, error]
+                        issues:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                              description:
+                                type: string
+                              objectId:
+                                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+                              severity:
+                                type: string
+                                enum: [info, warning, error]
+                        summary:
+                          type: object
+                          properties:
+                            totalObjects:
+                              type: integer
+                            checkedObjects:
+                              type: integer
+                            issuesFound:
+                              type: integer
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+admin_users_boot:
+  post:
+    tags:
+      - Administration
+    summary: Boot (disconnect) a user
+    description: |
+      Forcibly disconnect a user from the server. Requires admin permissions.
+    operationId: bootUser
+    parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+    requestBody:
+      required: false
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              reason:
+                type: string
+                description: Reason for booting the user
+              silent:
+                type: boolean
+                description: Boot silently without notification
+                default: false
+    responses:
+      '200':
+        description: User booted successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "User booted successfully"
+                        userId:
+                          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+admin_users_class:
+  patch:
+    tags:
+      - Administration
+    summary: Change user class
+    description: |
+      Change a user's class (privilege level). Requires admin permissions.
+    operationId: changeUserClass
+    parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - class
+            properties:
+              class:
+                $ref: '../schemas/common.yaml#/components/schemas/UserClass'
+              reason:
+                type: string
+                description: Reason for class change
+    responses:
+      '200':
+        description: User class changed successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        user:
+                          $ref: '../schemas/common.yaml#/components/schemas/User'
+                        message:
+                          type: string
+                          example: "User class changed successfully"
+      '400':
+        description: Invalid class
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+admin_maintenance_cleanup:
+  post:
+    tags:
+      - Administration
+    summary: Perform maintenance cleanup
+    description: |
+      Perform various maintenance tasks including object recycling,
+      log cleanup, and memory optimization.
+    operationId: performMaintenanceCleanup
+    requestBody:
+      required: false
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              tasks:
+                type: array
+                items:
+                  type: string
+                  enum: [recycle_objects, clean_logs, optimize_memory, compact_database]
+                description: Specific maintenance tasks to perform
+              force:
+                type: boolean
+                description: Force cleanup even if server is busy
+                default: false
+    responses:
+      '200':
+        description: Maintenance cleanup completed
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        completed:
+                          type: array
+                          items:
+                            type: string
+                          description: Completed maintenance tasks
+                        results:
+                          type: object
+                          properties:
+                            objectsRecycled:
+                              type: integer
+                            logsCleared:
+                              type: integer
+                            memoryFreed:
+                              type: integer
+                            databaseCompacted:
+                              type: boolean
+                        message:
+                          type: string
+                          example: "Maintenance cleanup completed"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'

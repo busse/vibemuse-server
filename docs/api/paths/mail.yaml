@@ -1,0 +1,334 @@
+mail:
+  get:
+    tags:
+      - Mail
+    summary: Get mail messages
+    description: |
+      Retrieve mail messages for the current user with optional filtering.
+    operationId: getMailMessages
+    parameters:
+      - name: folder
+        in: query
+        description: Mail folder
+        required: false
+        schema:
+          type: string
+          enum: [inbox, sent, drafts, all]
+          default: all
+      - name: unread
+        in: query
+        description: Filter by read status
+        required: false
+        schema:
+          type: boolean
+      - name: from
+        in: query
+        description: Filter by sender ID
+        required: false
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: limit
+        in: query
+        description: Items per page
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    responses:
+      '200':
+        description: Mail messages
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                        - $ref: '../schemas/common.yaml#/components/schemas/PaginatedResponse'
+                        - type: object
+                          properties:
+                            data:
+                              type: array
+                              items:
+                                $ref: '../schemas/common.yaml#/components/schemas/Message'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+  post:
+    tags:
+      - Mail
+    summary: Send mail message
+    description: |
+      Send a mail message to one or more recipients.
+    operationId: sendMailMessage
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - recipients
+              - content
+            properties:
+              recipients:
+                type: array
+                items:
+                  $ref: '../schemas/common.yaml#/components/schemas/UserId'
+                description: List of recipients
+              subject:
+                type: string
+                description: Message subject
+              content:
+                type: string
+                description: Message content
+              priority:
+                type: string
+                enum: [low, normal, high, urgent]
+                default: normal
+                description: Message priority
+    responses:
+      '201':
+        description: Mail sent successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/Message'
+      '400':
+        description: Invalid mail data
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+mail_by_id:
+  get:
+    tags:
+      - Mail
+    summary: Get mail message by ID
+    description: |
+      Retrieve a specific mail message. Marks message as read if unread.
+    operationId: getMailMessageById
+    parameters:
+      - name: messageId
+        in: path
+        description: Message ID
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Mail message details
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/Message'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Not authorized to read this message
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Message not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+  delete:
+    tags:
+      - Mail
+    summary: Delete mail message
+    description: |
+      Delete a mail message from the user's mailbox.
+    operationId: deleteMailMessage
+    parameters:
+      - name: messageId
+        in: path
+        description: Message ID
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Message deleted successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "Message deleted successfully"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Not authorized to delete this message
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Message not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+mail_inbox:
+  get:
+    tags:
+      - Mail
+    summary: Get inbox messages
+    description: |
+      Retrieve messages in the user's inbox.
+    operationId: getInboxMessages
+    parameters:
+      - name: unread
+        in: query
+        description: Filter by read status
+        required: false
+        schema:
+          type: boolean
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: limit
+        in: query
+        description: Items per page
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    responses:
+      '200':
+        description: Inbox messages
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                        - $ref: '../schemas/common.yaml#/components/schemas/PaginatedResponse'
+                        - type: object
+                          properties:
+                            data:
+                              type: array
+                              items:
+                                $ref: '../schemas/common.yaml#/components/schemas/Message'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+mail_sent:
+  get:
+    tags:
+      - Mail
+    summary: Get sent messages
+    description: |
+      Retrieve messages sent by the user.
+    operationId: getSentMessages
+    parameters:
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: limit
+        in: query
+        description: Items per page
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    responses:
+      '200':
+        description: Sent messages
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                        - $ref: '../schemas/common.yaml#/components/schemas/PaginatedResponse'
+                        - type: object
+                          properties:
+                            data:
+                              type: array
+                              items:
+                                $ref: '../schemas/common.yaml#/components/schemas/Message'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'

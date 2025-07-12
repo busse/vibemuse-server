@@ -1,0 +1,229 @@
+system_info:
+  get:
+    tags:
+      - System
+    summary: Get system information
+    description: |
+      Retrieve general information about the VibeMUSE server including
+      version, build information, and basic statistics.
+    operationId: getSystemInfo
+    responses:
+      '200':
+        description: System information
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/SystemInfo'
+            examples:
+              system_info:
+                summary: System information
+                value:
+                  success: true
+                  data:
+                    version: "2.0.0"
+                    uptime: 3600
+                    startTime: "2024-12-12T12:00:00Z"
+                    connectedUsers: 15
+                    totalObjects: 1250
+                    databaseSize: 2048576
+                    memoryUsage: 67108864
+                    buildInfo:
+                      compiler: "gcc 11.4.0"
+                      buildDate: "2024-12-12T10:00:00Z"
+                      gitCommit: "abc123def456"
+                  timestamp: "2024-12-12T16:00:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+system_health:
+  get:
+    tags:
+      - System
+    summary: Get system health status
+    description: |
+      Retrieve the current health status of the VibeMUSE server including
+      resource usage, service status, and any issues.
+    operationId: getSystemHealth
+    responses:
+      '200':
+        description: System health status
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                          enum: [healthy, degraded, unhealthy]
+                          description: Overall system health status
+                        services:
+                          type: object
+                          properties:
+                            database:
+                              type: object
+                              properties:
+                                status:
+                                  type: string
+                                  enum: [up, down, degraded]
+                                responseTime:
+                                  type: number
+                                  description: Database response time in milliseconds
+                            network:
+                              type: object
+                              properties:
+                                status:
+                                  type: string
+                                  enum: [up, down, degraded]
+                                connections:
+                                  type: integer
+                                  description: Active network connections
+                            memory:
+                              type: object
+                              properties:
+                                status:
+                                  type: string
+                                  enum: [normal, warning, critical]
+                                usage:
+                                  type: number
+                                  description: Memory usage percentage
+                                available:
+                                  type: integer
+                                  description: Available memory in bytes
+                        checks:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                                description: Health check name
+                              status:
+                                type: string
+                                enum: [pass, fail, warn]
+                              message:
+                                type: string
+                                description: Health check result message
+                              timestamp:
+                                type: string
+                                format: date-time
+                        uptime:
+                          type: integer
+                          description: Server uptime in seconds
+                        lastRestart:
+                          type: string
+                          format: date-time
+                          description: Last server restart time
+            examples:
+              healthy_system:
+                summary: Healthy system status
+                value:
+                  success: true
+                  data:
+                    status: "healthy"
+                    services:
+                      database:
+                        status: "up"
+                        responseTime: 2.5
+                      network:
+                        status: "up"
+                        connections: 15
+                      memory:
+                        status: "normal"
+                        usage: 45.2
+                        available: 1073741824
+                    checks:
+                      - name: "database_connectivity"
+                        status: "pass"
+                        message: "Database responding normally"
+                        timestamp: "2024-12-12T15:57:00Z"
+                      - name: "disk_space"
+                        status: "pass"
+                        message: "Disk space sufficient"
+                        timestamp: "2024-12-12T15:57:00Z"
+                    uptime: 3600
+                    lastRestart: "2024-12-12T12:00:00Z"
+                  timestamp: "2024-12-12T16:00:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+system_version:
+  get:
+    tags:
+      - System
+    summary: Get system version
+    description: |
+      Retrieve the current version of the VibeMUSE server.
+    operationId: getSystemVersion
+    responses:
+      '200':
+        description: System version
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        version:
+                          type: string
+                          description: Current version number
+                        apiVersion:
+                          type: string
+                          description: API version
+                        buildDate:
+                          type: string
+                          format: date-time
+                          description: Build timestamp
+                        gitCommit:
+                          type: string
+                          description: Git commit hash
+                        compatibility:
+                          type: object
+                          properties:
+                            minClientVersion:
+                              type: string
+                              description: Minimum compatible client version
+                            maxClientVersion:
+                              type: string
+                              description: Maximum compatible client version
+            examples:
+              version_info:
+                summary: Version information
+                value:
+                  success: true
+                  data:
+                    version: "2.0.0"
+                    apiVersion: "1.0.0"
+                    buildDate: "2024-12-12T10:00:00Z"
+                    gitCommit: "abc123def456"
+                    compatibility:
+                      minClientVersion: "1.0.0"
+                      maxClientVersion: "2.0.0"
+                  timestamp: "2024-12-12T16:00:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'

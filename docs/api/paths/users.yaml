@@ -1,0 +1,591 @@
+users:
+  get:
+    tags:
+      - Users
+    summary: List users
+    description: |
+      Retrieve a list of users with optional filtering and pagination.
+      Admins can see all users, while regular users see limited information.
+    operationId: listUsers
+    parameters:
+      - name: online
+        in: query
+        description: Filter by online status
+        required: false
+        schema:
+          type: boolean
+      - name: class
+        in: query
+        description: Filter by user class
+        required: false
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/UserClass'
+      - name: search
+        in: query
+        description: Search users by name
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: limit
+        in: query
+        description: Items per page
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    responses:
+      '200':
+        description: List of users
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                        - $ref: '../schemas/common.yaml#/components/schemas/PaginatedResponse'
+                        - type: object
+                          properties:
+                            data:
+                              type: array
+                              items:
+                                $ref: '../schemas/common.yaml#/components/schemas/User'
+            examples:
+              user_list:
+                summary: List of users
+                value:
+                  success: true
+                  data:
+                    data:
+                      - id: 1001
+                        name: "Gandalf"
+                        class: "admin"
+                        connected: true
+                        location: 12345
+                        created: "2024-01-01T00:00:00Z"
+                      - id: 1002
+                        name: "Aragorn"
+                        class: "citizen"
+                        connected: false
+                        lastSeen: "2024-12-11T20:30:00Z"
+                        location: 12346
+                        created: "2024-01-05T10:15:00Z"
+                    pagination:
+                      page: 1
+                      limit: 20
+                      total: 2
+                      totalPages: 1
+                      hasNext: false
+                      hasPrevious: false
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+users_by_id:
+  get:
+    tags:
+      - Users
+    summary: Get user by ID
+    description: |
+      Retrieve detailed information about a specific user.
+      Users can view their own details or limited public information about others.
+    operationId: getUserById
+    parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+    responses:
+      '200':
+        description: User details
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/User'
+            examples:
+              user_details:
+                summary: User details
+                value:
+                  success: true
+                  data:
+                    id: 1001
+                    name: "Gandalf"
+                    class: "admin"
+                    connected: true
+                    lastSeen: "2024-12-12T15:57:00Z"
+                    location: 12345
+                    description: "A wise wizard with a long beard"
+                    home: 12340
+                    credits: 1000
+                    quota: 100
+                    powers:
+                      - name: "POW_ANNOUNCE"
+                        level: "yes"
+                        description: "Can make server-wide announcements"
+                    flags: ["CONNECT", "INHERIT_POWERS"]
+                    idleTime: 0
+                    doing: "Managing the server"
+                    created: "2024-01-01T00:00:00Z"
+                  timestamp: "2024-12-12T15:57:00Z"
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+  patch:
+    tags:
+      - Users
+    summary: Update user
+    description: |
+      Update a user's information. Users can update their own profile,
+      while admins can update any user.
+    operationId: updateUser
+    parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: User's display name
+              description:
+                type: string
+                description: User's description/bio
+              doing:
+                type: string
+                description: User's current status message
+              home:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+              class:
+                $ref: '../schemas/common.yaml#/components/schemas/UserClass'
+              credits:
+                type: integer
+                description: User's credits (admin only)
+              quota:
+                type: integer
+                description: User's quota (admin only)
+          examples:
+            update_profile:
+              summary: Update user profile
+              value:
+                description: "An experienced adventurer"
+                doing: "Exploring the eastern kingdoms"
+                home: 12347
+    responses:
+      '200':
+        description: User updated successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/User'
+      '400':
+        description: Invalid update data
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+users_password:
+  patch:
+    tags:
+      - Users
+    summary: Change user password
+    description: |
+      Change a user's password. Users can change their own password,
+      while admins can reset any user's password.
+    operationId: changeUserPassword
+    parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - newPassword
+            properties:
+              currentPassword:
+                type: string
+                format: password
+                description: Current password (required for own password change)
+              newPassword:
+                type: string
+                format: password
+                description: New password
+          examples:
+            change_own_password:
+              summary: Change own password
+              value:
+                currentPassword: "oldpassword123"
+                newPassword: "newpassword456"
+            admin_reset_password:
+              summary: Admin password reset
+              value:
+                newPassword: "temppassword789"
+    responses:
+      '200':
+        description: Password changed successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "Password changed successfully"
+            examples:
+              password_changed:
+                summary: Password changed
+                value:
+                  success: true
+                  data:
+                    message: "Password changed successfully"
+                  timestamp: "2024-12-12T15:57:00Z"
+      '400':
+        description: Invalid password data
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required or current password incorrect
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+users_powers:
+  get:
+    tags:
+      - Users
+    summary: Get user powers
+    description: |
+      Retrieve a user's powers and permissions.
+      Only admins can view other users' powers.
+    operationId: getUserPowers
+    parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+    responses:
+      '200':
+        description: User powers
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        userId:
+                          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+                        powers:
+                          type: array
+                          items:
+                            $ref: '../schemas/common.yaml#/components/schemas/Power'
+            examples:
+              user_powers:
+                summary: User powers
+                value:
+                  success: true
+                  data:
+                    userId: 1001
+                    powers:
+                      - name: "POW_ANNOUNCE"
+                        level: "yes"
+                        description: "Can make server-wide announcements"
+                      - name: "POW_BOOT"
+                        level: "yeseq"
+                        description: "Can disconnect users of equal or lower class"
+                      - name: "POW_BROADCAST"
+                        level: "yes"
+                        description: "Can send messages to all users"
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+  patch:
+    tags:
+      - Users
+    summary: Update user powers
+    description: |
+      Modify a user's powers. Only admins with appropriate permissions
+      can modify user powers.
+    operationId: updateUserPowers
+    parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - powers
+            properties:
+              powers:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - name
+                    - level
+                  properties:
+                    name:
+                      type: string
+                      description: Power name
+                    level:
+                      type: string
+                      enum: [yes, yeseq, yeslt, no]
+                      description: Power level
+          examples:
+            update_powers:
+              summary: Update user powers
+              value:
+                powers:
+                  - name: "POW_ANNOUNCE"
+                    level: "yes"
+                  - name: "POW_BOOT"
+                    level: "yeseq"
+                  - name: "POW_EXAMINE"
+                    level: "no"
+    responses:
+      '200':
+        description: Powers updated successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        userId:
+                          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+                        powers:
+                          type: array
+                          items:
+                            $ref: '../schemas/common.yaml#/components/schemas/Power'
+      '400':
+        description: Invalid power data
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+users_online:
+  get:
+    tags:
+      - Users
+    summary: Get online users
+    description: |
+      Retrieve a list of currently online users with their status information.
+    operationId: getOnlineUsers
+    responses:
+      '200':
+        description: List of online users
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        users:
+                          type: array
+                          items:
+                            allOf:
+                              - $ref: '../schemas/common.yaml#/components/schemas/User'
+                              - type: object
+                                properties:
+                                  connectionInfo:
+                                    type: object
+                                    properties:
+                                      loginTime:
+                                        type: string
+                                        format: date-time
+                                      ipAddress:
+                                        type: string
+                                      idleTime:
+                                        type: integer
+                                        description: Seconds idle
+                        totalOnline:
+                          type: integer
+                          description: Total number of online users
+            examples:
+              online_users:
+                summary: Currently online users
+                value:
+                  success: true
+                  data:
+                    users:
+                      - id: 1001
+                        name: "Gandalf"
+                        class: "admin"
+                        connected: true
+                        location: 12345
+                        doing: "Managing the server"
+                        connectionInfo:
+                          loginTime: "2024-12-12T14:30:00Z"
+                          ipAddress: "192.168.1.100"
+                          idleTime: 0
+                      - id: 1002
+                        name: "Aragorn"
+                        class: "citizen"
+                        connected: true
+                        location: 12346
+                        doing: "Exploring the wilderness"
+                        connectionInfo:
+                          loginTime: "2024-12-12T15:00:00Z"
+                          ipAddress: "192.168.1.101"
+                          idleTime: 300
+                    totalOnline: 2
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'

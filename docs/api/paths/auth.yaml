@@ -1,0 +1,376 @@
+auth_login:
+  post:
+    tags:
+      - Authentication
+    summary: Authenticate user and create session
+    description: |
+      Authenticate a user with username and password. Returns a JWT token
+      and user information on successful authentication.
+    operationId: login
+    security: []  # No authentication required for login
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/common.yaml#/components/schemas/LoginRequest'
+          examples:
+            standard_login:
+              summary: Standard user login
+              value:
+                username: "Gandalf"
+                password: "youshallnotpass"
+            admin_login:
+              summary: Admin user login
+              value:
+                username: "Wizard"
+                password: "fooblee"
+    responses:
+      '200':
+        description: Authentication successful
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/LoginResponse'
+            examples:
+              successful_login:
+                summary: Successful authentication
+                value:
+                  success: true
+                  data:
+                    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    user:
+                      id: 1001
+                      name: "Gandalf"
+                      class: "admin"
+                      connected: true
+                      location: 12345
+                      credits: 1000
+                      quota: 100
+                    expires: "2024-12-13T15:57:00Z"
+                    refreshToken: "rt_abc123def456"
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication failed
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+            examples:
+              invalid_credentials:
+                summary: Invalid username or password
+                value:
+                  success: false
+                  error:
+                    code: "AUTH_INVALID_CREDENTIALS"
+                    message: "Invalid username or password"
+                  timestamp: "2024-12-12T15:57:00Z"
+      '423':
+        description: Account locked due to too many failed attempts
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+            examples:
+              account_locked:
+                summary: Account temporarily locked
+                value:
+                  success: false
+                  error:
+                    code: "AUTH_ACCOUNT_LOCKED"
+                    message: "Account temporarily locked due to too many failed login attempts"
+                    details:
+                      unlockTime: "2024-12-12T16:57:00Z"
+                  timestamp: "2024-12-12T15:57:00Z"
+
+auth_logout:
+  post:
+    tags:
+      - Authentication
+    summary: Logout user and invalidate session
+    description: |
+      Logout the current user and invalidate their authentication token.
+    operationId: logout
+    responses:
+      '200':
+        description: Logout successful
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "Logout successful"
+            examples:
+              successful_logout:
+                summary: Successful logout
+                value:
+                  success: true
+                  data:
+                    message: "Logout successful"
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+auth_register:
+  post:
+    tags:
+      - Authentication
+    summary: Register a new user account
+    description: |
+      Create a new user account. Registration may be restricted based on
+      server configuration (WCREAT flag).
+    operationId: register
+    security: []  # No authentication required for registration
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/common.yaml#/components/schemas/RegisterRequest'
+          examples:
+            new_user:
+              summary: New user registration
+              value:
+                username: "NewPlayer"
+                password: "securepassword123"
+                email: "player@example.com"
+                description: "A new adventurer ready to explore the world"
+    responses:
+      '201':
+        description: User created successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                        - $ref: '../schemas/common.yaml#/components/schemas/LoginResponse'
+                        - type: object
+                          properties:
+                            welcomeMessage:
+                              type: string
+                              description: Welcome message for new users
+            examples:
+              successful_registration:
+                summary: Successful user creation
+                value:
+                  success: true
+                  data:
+                    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    user:
+                      id: 1002
+                      name: "NewPlayer"
+                      class: "citizen"
+                      connected: true
+                      location: 0
+                      credits: 100
+                      quota: 10
+                      created: "2024-12-12T15:57:00Z"
+                    expires: "2024-12-13T15:57:00Z"
+                    refreshToken: "rt_xyz789abc012"
+                    welcomeMessage: "Welcome to VibeMUSE! Type 'help' for assistance."
+                  timestamp: "2024-12-12T15:57:00Z"
+      '400':
+        description: Registration failed due to invalid input
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+            examples:
+              username_taken:
+                summary: Username already exists
+                value:
+                  success: false
+                  error:
+                    code: "REG_USERNAME_TAKEN"
+                    message: "Username already exists"
+                  timestamp: "2024-12-12T15:57:00Z"
+              invalid_password:
+                summary: Password doesn't meet requirements
+                value:
+                  success: false
+                  error:
+                    code: "REG_INVALID_PASSWORD"
+                    message: "Password must be at least 8 characters long"
+                  timestamp: "2024-12-12T15:57:00Z"
+      '403':
+        description: Registration is disabled
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+            examples:
+              registration_disabled:
+                summary: Registration disabled by admin
+                value:
+                  success: false
+                  error:
+                    code: "REG_DISABLED"
+                    message: "New user registration is currently disabled"
+                  timestamp: "2024-12-12T15:57:00Z"
+
+auth_me:
+  get:
+    tags:
+      - Authentication
+    summary: Get current user information
+    description: |
+      Retrieve information about the currently authenticated user.
+    operationId: getCurrentUser
+    responses:
+      '200':
+        description: Current user information
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                        - $ref: '../schemas/common.yaml#/components/schemas/User'
+                        - type: object
+                          properties:
+                            sessionInfo:
+                              type: object
+                              properties:
+                                loginTime:
+                                  type: string
+                                  format: date-time
+                                ipAddress:
+                                  type: string
+                                userAgent:
+                                  type: string
+                                permissions:
+                                  type: array
+                                  items:
+                                    type: string
+            examples:
+              current_user:
+                summary: Current user details
+                value:
+                  success: true
+                  data:
+                    id: 1001
+                    name: "Gandalf"
+                    class: "admin"
+                    connected: true
+                    lastSeen: "2024-12-12T15:57:00Z"
+                    location: 12345
+                    description: "A wise wizard with a long beard"
+                    home: 12340
+                    credits: 1000
+                    quota: 100
+                    powers:
+                      - name: "POW_ANNOUNCE"
+                        level: "yes"
+                        description: "Can make server-wide announcements"
+                      - name: "POW_BOOT"
+                        level: "yeseq"
+                        description: "Can disconnect users of equal or lower class"
+                    flags: ["CONNECT", "INHERIT_POWERS"]
+                    idleTime: 0
+                    doing: "Managing the server"
+                    sessionInfo:
+                      loginTime: "2024-12-12T14:30:00Z"
+                      ipAddress: "192.168.1.100"
+                      userAgent: "VibeMUSE Web Client/1.0"
+                      permissions: ["read", "write", "admin"]
+                    created: "2024-01-01T00:00:00Z"
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+  
+  patch:
+    tags:
+      - Authentication
+    summary: Update current user profile
+    description: |
+      Update the current user's profile information such as description,
+      doing message, and preferences.
+    operationId: updateCurrentUser
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              description:
+                type: string
+                description: User's description/bio
+              doing:
+                type: string
+                description: User's current status message
+              home:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+              preferences:
+                type: object
+                properties:
+                  ansiColors:
+                    type: boolean
+                  screenWidth:
+                    type: integer
+                  terseMode:
+                    type: boolean
+                  awayMessage:
+                    type: string
+          examples:
+            update_profile:
+              summary: Update user profile
+              value:
+                description: "A wise wizard exploring the digital realm"
+                doing: "Writing documentation"
+                preferences:
+                  ansiColors: true
+                  screenWidth: 80
+                  terseMode: false
+                  awayMessage: "Away from keyboard, back soon!"
+    responses:
+      '200':
+        description: Profile updated successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/User'
+      '400':
+        description: Invalid update data
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'

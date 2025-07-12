@@ -8,3 +8,4 @@ This directory contains documentation for the TinyMUSE codebase.
 - [Server Architecture](server-architecture.md) - Technical implementation details
 - [Features](features.md) - List of application features and capabilities
 - [Potential Issues](potential-issues.md) - Identified modernization opportunities (optional)
+- [API Documentation](api/README.md) - RESTful API specification and documentation
