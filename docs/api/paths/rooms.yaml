@@ -1,0 +1,275 @@
+rooms:
+  get:
+    tags:
+      - Rooms
+    summary: List rooms
+    description: |
+      Retrieve a list of rooms in the virtual world with optional filtering.
+    operationId: listRooms
+    parameters:
+      - name: zone
+        in: query
+        description: Filter by zone ID
+        required: false
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+      - name: owner
+        in: query
+        description: Filter by owner ID
+        required: false
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+      - name: search
+        in: query
+        description: Search rooms by name
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Page number
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: limit
+        in: query
+        description: Items per page
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    responses:
+      '200':
+        description: List of rooms
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                        - $ref: '../schemas/common.yaml#/components/schemas/PaginatedResponse'
+                        - type: object
+                          properties:
+                            data:
+                              type: array
+                              items:
+                                $ref: '../schemas/common.yaml#/components/schemas/Room'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+rooms_by_id:
+  get:
+    tags:
+      - Rooms
+    summary: Get room by ID
+    description: |
+      Retrieve detailed information about a specific room including its
+      contents, exits, and occupants.
+    operationId: getRoomById
+    parameters:
+      - name: roomId
+        in: path
+        description: Room ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Room details
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/Room'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to view room
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Room not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+room_occupants:
+  get:
+    tags:
+      - Rooms
+    summary: Get room occupants
+    description: |
+      Retrieve a list of users currently in the room.
+    operationId: getRoomOccupants
+    parameters:
+      - name: roomId
+        in: path
+        description: Room ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Room occupants
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        roomId:
+                          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+                        occupants:
+                          type: array
+                          items:
+                            $ref: '../schemas/common.yaml#/components/schemas/User'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to view occupants
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Room not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+room_exits:
+  get:
+    tags:
+      - Rooms
+    summary: Get room exits
+    description: |
+      Retrieve a list of exits from the room.
+    operationId: getRoomExits
+    parameters:
+      - name: roomId
+        in: path
+        description: Room ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Room exits
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        roomId:
+                          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+                        exits:
+                          type: array
+                          items:
+                            $ref: '../schemas/common.yaml#/components/schemas/Exit'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to view exits
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Room not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+room_contents:
+  get:
+    tags:
+      - Rooms
+    summary: Get room contents
+    description: |
+      Retrieve a list of objects (things) in the room.
+    operationId: getRoomContents
+    parameters:
+      - name: roomId
+        in: path
+        description: Room ID
+        required: true
+        schema:
+          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Room contents
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        roomId:
+                          $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+                        contents:
+                          type: array
+                          items:
+                            $ref: '../schemas/common.yaml#/components/schemas/VirtualObject'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to view contents
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Room not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'

@@ -1,0 +1,259 @@
+channels:
+  get:
+    tags:
+      - Channels
+    summary: List channels
+    description: |
+      Retrieve a list of channels the user can access.
+    operationId: listChannels
+    responses:
+      '200':
+        description: List of channels
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '../schemas/common.yaml#/components/schemas/Channel'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+channels_by_id:
+  get:
+    tags:
+      - Channels
+    summary: Get channel by ID
+    description: |
+      Retrieve information about a specific channel.
+    operationId: getChannelById
+    parameters:
+      - name: channelId
+        in: path
+        description: Channel ID
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Channel details
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/Channel'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Not authorized to access this channel
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Channel not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+channel_messages:
+  get:
+    tags:
+      - Channels
+    summary: Get channel messages
+    description: |
+      Retrieve recent messages from a channel.
+    operationId: getChannelMessages
+    parameters:
+      - name: channelId
+        in: path
+        description: Channel ID
+        required: true
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: Number of messages to retrieve
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+      - name: before
+        in: query
+        description: Get messages before this timestamp
+        required: false
+        schema:
+          type: string
+          format: date-time
+    responses:
+      '200':
+        description: Channel messages
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        channelId:
+                          type: string
+                        messages:
+                          type: array
+                          items:
+                            $ref: '../schemas/common.yaml#/components/schemas/Message'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Not authorized to access this channel
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Channel not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+  post:
+    tags:
+      - Channels
+    summary: Send channel message
+    description: |
+      Send a message to a channel.
+    operationId: sendChannelMessage
+    parameters:
+      - name: channelId
+        in: path
+        description: Channel ID
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - content
+            properties:
+              content:
+                type: string
+                description: Message content
+    responses:
+      '201':
+        description: Message sent successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/Message'
+      '400':
+        description: Invalid message content
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Not authorized to send to this channel
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Channel not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+channel_members:
+  get:
+    tags:
+      - Channels
+    summary: Get channel members
+    description: |
+      Retrieve a list of channel members.
+    operationId: getChannelMembers
+    parameters:
+      - name: channelId
+        in: path
+        description: Channel ID
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Channel members
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        channelId:
+                          type: string
+                        members:
+                          type: array
+                          items:
+                            $ref: '../schemas/common.yaml#/components/schemas/User'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Not authorized to view channel members
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Channel not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'

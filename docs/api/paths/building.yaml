@@ -1,0 +1,365 @@
+building_create:
+  post:
+    tags:
+      - Building
+    summary: Create a new object (thing)
+    description: |
+      Create a new thing object. Requires builder permissions and available quota.
+    operationId: createThing
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+                description: Object name
+              description:
+                type: string
+                description: Object description
+              location:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+              flags:
+                type: array
+                items:
+                  type: string
+                description: Object flags
+              attributes:
+                type: object
+                additionalProperties:
+                  type: string
+                description: Initial attributes
+    responses:
+      '201':
+        description: Thing created successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        object:
+                          $ref: '../schemas/common.yaml#/components/schemas/VirtualObject'
+                        cost:
+                          type: integer
+                          description: Credits spent to create the object
+                        message:
+                          type: string
+                          example: "You create a magic sword."
+      '400':
+        description: Invalid object data
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions or quota exceeded
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+building_dig:
+  post:
+    tags:
+      - Building
+    summary: Dig a new room
+    description: |
+      Create a new room object. Requires builder permissions and available quota.
+    operationId: digRoom
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+                description: Room name
+              description:
+                type: string
+                description: Room description
+              zone:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+              flags:
+                type: array
+                items:
+                  type: string
+                description: Room flags
+              attributes:
+                type: object
+                additionalProperties:
+                  type: string
+                description: Initial attributes
+    responses:
+      '201':
+        description: Room created successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        room:
+                          $ref: '../schemas/common.yaml#/components/schemas/Room'
+                        cost:
+                          type: integer
+                          description: Credits spent to create the room
+                        message:
+                          type: string
+                          example: "You dig a new room: Ancient Library."
+      '400':
+        description: Invalid room data
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions or quota exceeded
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+building_open:
+  post:
+    tags:
+      - Building
+    summary: Open a new exit
+    description: |
+      Create a new exit object. Requires builder permissions and available quota.
+    operationId: openExit
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - source
+            properties:
+              name:
+                type: string
+                description: Exit name/direction
+              source:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+              destination:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+              aliases:
+                type: array
+                items:
+                  type: string
+                description: Exit aliases
+              description:
+                type: string
+                description: Exit description
+              flags:
+                type: array
+                items:
+                  type: string
+                description: Exit flags
+    responses:
+      '201':
+        description: Exit created successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        exit:
+                          $ref: '../schemas/common.yaml#/components/schemas/Exit'
+                        cost:
+                          type: integer
+                          description: Credits spent to create the exit
+                        message:
+                          type: string
+                          example: "You open a new exit: north."
+      '400':
+        description: Invalid exit data
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions or quota exceeded
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+building_link:
+  post:
+    tags:
+      - Building
+    summary: Link an exit to a destination
+    description: |
+      Link an existing exit to a destination room.
+    operationId: linkExit
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - exitId
+              - destination
+            properties:
+              exitId:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+              destination:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Exit linked successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        exit:
+                          $ref: '../schemas/common.yaml#/components/schemas/Exit'
+                        message:
+                          type: string
+                          example: "You link the exit to the destination."
+      '400':
+        description: Invalid link data
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to link
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Exit or destination not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+building_destroy:
+  post:
+    tags:
+      - Building
+    summary: Destroy an object
+    description: |
+      Destroy an object (mark it for recycling). Requires appropriate permissions.
+    operationId: destroyObject
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - objectId
+            properties:
+              objectId:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+              force:
+                type: boolean
+                description: Force destruction even if object has contents
+                default: false
+    responses:
+      '200':
+        description: Object destroyed successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        refund:
+                          type: integer
+                          description: Credits refunded to owner
+                        message:
+                          type: string
+                          example: "You destroy the magic sword."
+      '400':
+        description: Cannot destroy object
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to destroy
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '409':
+        description: Object has contents or dependencies
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'

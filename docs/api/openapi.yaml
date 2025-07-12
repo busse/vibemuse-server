@@ -1,0 +1,211 @@
+openapi: 3.0.3
+info:
+  title: VibeMUSE API
+  description: |
+    RESTful API for VibeMUSE, a modernized port of the classic TinyMUSE server.
+    
+    VibeMUSE provides a rich multi-user simulated environment with support for:
+    - User management and authentication
+    - Virtual world building and navigation
+    - Real-time communication
+    - Object interaction and manipulation
+    - Administrative tools
+    
+    This API enables modern web and mobile clients to interact with the VibeMUSE server
+    while preserving the core functionality and user experience of the original TinyMUSE.
+  version: 2.0.0
+  contact:
+    name: VibeMUSE API Support
+    url: https://github.com/busse/vibemuse-server
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+    
+servers:
+  - url: https://api.vibemuse.com/v1
+    description: Production server
+  - url: https://staging-api.vibemuse.com/v1
+    description: Staging server
+  - url: http://localhost:8080/v1
+    description: Local development server
+
+paths:
+  # Authentication Endpoints
+  /auth/login:
+    $ref: './paths/auth.yaml#/auth_login'
+  /auth/logout:
+    $ref: './paths/auth.yaml#/auth_logout'
+  /auth/register:
+    $ref: './paths/auth.yaml#/auth_register'
+  /auth/me:
+    $ref: './paths/auth.yaml#/auth_me'
+  
+  # User Management Endpoints
+  /users:
+    $ref: './paths/users.yaml#/users'
+  /users/{userId}:
+    $ref: './paths/users.yaml#/users_by_id'
+  /users/{userId}/password:
+    $ref: './paths/users.yaml#/users_password'
+  /users/{userId}/powers:
+    $ref: './paths/users.yaml#/users_powers'
+  /users/online:
+    $ref: './paths/users.yaml#/users_online'
+  
+  # World Management Endpoints
+  /objects:
+    $ref: './paths/objects.yaml#/objects'
+  /objects/{objectId}:
+    $ref: './paths/objects.yaml#/objects_by_id'
+  /objects/{objectId}/attributes:
+    $ref: './paths/objects.yaml#/objects_attributes'
+  /objects/{objectId}/attributes/{attributeName}:
+    $ref: './paths/objects.yaml#/objects_attribute_by_name'
+  /objects/{objectId}/contents:
+    $ref: './paths/objects.yaml#/objects_contents'
+  /objects/{objectId}/exits:
+    $ref: './paths/objects.yaml#/objects_exits'
+  
+  # Room Management
+  /rooms:
+    $ref: './paths/rooms.yaml#/rooms'
+  /rooms/{roomId}:
+    $ref: './paths/rooms.yaml#/rooms_by_id'
+  /rooms/{roomId}/occupants:
+    $ref: './paths/rooms.yaml#/room_occupants'
+  /rooms/{roomId}/exits:
+    $ref: './paths/rooms.yaml#/room_exits'
+  /rooms/{roomId}/contents:
+    $ref: './paths/rooms.yaml#/room_contents'
+  
+  # Communication Endpoints
+  /messages/say:
+    $ref: './paths/communication.yaml#/messages_say'
+  /messages/pose:
+    $ref: './paths/communication.yaml#/messages_pose'
+  /messages/whisper:
+    $ref: './paths/communication.yaml#/messages_whisper'
+  /messages/page:
+    $ref: './paths/communication.yaml#/messages_page'
+  /messages/broadcast:
+    $ref: './paths/communication.yaml#/messages_broadcast'
+  
+  # Mail System
+  /mail:
+    $ref: './paths/mail.yaml#/mail'
+  /mail/{messageId}:
+    $ref: './paths/mail.yaml#/mail_by_id'
+  /mail/inbox:
+    $ref: './paths/mail.yaml#/mail_inbox'
+  /mail/sent:
+    $ref: './paths/mail.yaml#/mail_sent'
+  
+  # Channel System
+  /channels:
+    $ref: './paths/channels.yaml#/channels'
+  /channels/{channelId}:
+    $ref: './paths/channels.yaml#/channels_by_id'
+  /channels/{channelId}/messages:
+    $ref: './paths/channels.yaml#/channel_messages'
+  /channels/{channelId}/members:
+    $ref: './paths/channels.yaml#/channel_members'
+  
+  # Movement and Navigation
+  /movement/go:
+    $ref: './paths/movement.yaml#/movement_go'
+  /movement/teleport:
+    $ref: './paths/movement.yaml#/movement_teleport'
+  /movement/home:
+    $ref: './paths/movement.yaml#/movement_home'
+  /movement/follow:
+    $ref: './paths/movement.yaml#/movement_follow'
+  
+  # Game Mechanics
+  /actions/get:
+    $ref: './paths/actions.yaml#/actions_get'
+  /actions/drop:
+    $ref: './paths/actions.yaml#/actions_drop'
+  /actions/give:
+    $ref: './paths/actions.yaml#/actions_give'
+  /actions/use:
+    $ref: './paths/actions.yaml#/actions_use'
+  /actions/examine:
+    $ref: './paths/actions.yaml#/actions_examine'
+  
+  # Building and Creation
+  /building/create:
+    $ref: './paths/building.yaml#/building_create'
+  /building/dig:
+    $ref: './paths/building.yaml#/building_dig'
+  /building/open:
+    $ref: './paths/building.yaml#/building_open'
+  /building/link:
+    $ref: './paths/building.yaml#/building_link'
+  /building/destroy:
+    $ref: './paths/building.yaml#/building_destroy'
+  
+  # Administrative Endpoints
+  /admin/stats:
+    $ref: './paths/admin.yaml#/admin_stats'
+  /admin/database/dump:
+    $ref: './paths/admin.yaml#/admin_database_dump'
+  /admin/database/integrity:
+    $ref: './paths/admin.yaml#/admin_database_integrity'
+  /admin/users/{userId}/boot:
+    $ref: './paths/admin.yaml#/admin_users_boot'
+  /admin/users/{userId}/class:
+    $ref: './paths/admin.yaml#/admin_users_class'
+  /admin/maintenance/cleanup:
+    $ref: './paths/admin.yaml#/admin_maintenance_cleanup'
+  
+  # System Information
+  /system/info:
+    $ref: './paths/system.yaml#/system_info'
+  /system/health:
+    $ref: './paths/system.yaml#/system_health'
+  /system/version:
+    $ref: './paths/system.yaml#/system_version'
+
+components:
+  schemas:
+    $ref: './schemas/common.yaml#/components/schemas'
+  
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: sessionId
+
+security:
+  - bearerAuth: []
+  - sessionAuth: []
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: Users
+    description: User management and profiles
+  - name: Objects
+    description: General object management
+  - name: Rooms
+    description: Room management and navigation
+  - name: Communication
+    description: Real-time communication features
+  - name: Mail
+    description: Persistent messaging system
+  - name: Channels
+    description: Channel-based chat system
+  - name: Movement
+    description: Player movement and navigation
+  - name: Actions
+    description: Object interaction and manipulation
+  - name: Building
+    description: World building and creation tools
+  - name: Administration
+    description: Administrative tools and management
+  - name: System
+    description: System information and health monitoring

@@ -36,6 +36,7 @@ Comprehensive documentation for the TinyMUSE codebase:
 - **[Server Architecture](docs/server-architecture.md)** - Technical implementation details  
 - **[Features](docs/features.md)** - Complete list of application features
 - **[Modernization Opportunities](docs/potential-issues.md)** - Areas for improvement and modernization
+- **[API Documentation](docs/api/README.md)** - RESTful API specification and documentation
 
 ## Server Administration
 

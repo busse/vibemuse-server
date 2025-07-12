@@ -1,0 +1,306 @@
+actions_get:
+  post:
+    tags:
+      - Actions
+    summary: Get an object
+    description: |
+      Pick up an object from the current location and add it to inventory.
+    operationId: getObject
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - objectId
+            properties:
+              objectId:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Object retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        object:
+                          $ref: '../schemas/common.yaml#/components/schemas/VirtualObject'
+                        message:
+                          type: string
+                          example: "You pick up the magic sword."
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Cannot get that object
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+actions_drop:
+  post:
+    tags:
+      - Actions
+    summary: Drop an object
+    description: |
+      Drop an object from inventory to the current location.
+    operationId: dropObject
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - objectId
+            properties:
+              objectId:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Object dropped successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        object:
+                          $ref: '../schemas/common.yaml#/components/schemas/VirtualObject'
+                        message:
+                          type: string
+                          example: "You drop the magic sword."
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Cannot drop that object
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+actions_give:
+  post:
+    tags:
+      - Actions
+    summary: Give an object to another player
+    description: |
+      Give an object from inventory to another player.
+    operationId: giveObject
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - objectId
+              - recipient
+            properties:
+              objectId:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+              recipient:
+                $ref: '../schemas/common.yaml#/components/schemas/UserId'
+    responses:
+      '200':
+        description: Object given successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        object:
+                          $ref: '../schemas/common.yaml#/components/schemas/VirtualObject'
+                        recipient:
+                          $ref: '../schemas/common.yaml#/components/schemas/User'
+                        message:
+                          type: string
+                          example: "You give the magic sword to Aragorn."
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Cannot give that object
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object or recipient not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+actions_use:
+  post:
+    tags:
+      - Actions
+    summary: Use an object
+    description: |
+      Use or activate an object, triggering its special functionality.
+    operationId: useObject
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - objectId
+            properties:
+              objectId:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+              arguments:
+                type: string
+                description: Optional arguments for the use action
+    responses:
+      '200':
+        description: Object used successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        object:
+                          $ref: '../schemas/common.yaml#/components/schemas/VirtualObject'
+                        message:
+                          type: string
+                          example: "You use the magic sword. It glows with power!"
+                        effects:
+                          type: array
+                          items:
+                            type: string
+                          description: List of effects from using the object
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Cannot use that object
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+actions_examine:
+  post:
+    tags:
+      - Actions
+    summary: Examine an object
+    description: |
+      Examine an object to get detailed information about it.
+    operationId: examineObject
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - objectId
+            properties:
+              objectId:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Object examined successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        object:
+                          $ref: '../schemas/common.yaml#/components/schemas/VirtualObject'
+                        examination:
+                          type: object
+                          properties:
+                            description:
+                              type: string
+                              description: Detailed description
+                            contents:
+                              type: array
+                              items:
+                                $ref: '../schemas/common.yaml#/components/schemas/VirtualObject'
+                            attributes:
+                              type: object
+                              additionalProperties:
+                                $ref: '../schemas/common.yaml#/components/schemas/Attribute'
+                            specialInfo:
+                              type: string
+                              description: Special examination information
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Cannot examine that object
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Object not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'

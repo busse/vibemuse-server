@@ -1,0 +1,212 @@
+movement_go:
+  post:
+    tags:
+      - Movement
+    summary: Move through an exit
+    description: |
+      Move the player through a specific exit to a destination.
+    operationId: moveGo
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - direction
+            properties:
+              direction:
+                type: string
+                description: Direction or exit name
+                example: "north"
+    responses:
+      '200':
+        description: Movement successful
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        newLocation:
+                          $ref: '../schemas/common.yaml#/components/schemas/Room'
+                        message:
+                          type: string
+                          example: "You go north."
+      '400':
+        description: Invalid direction or exit not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Cannot move in that direction
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+movement_teleport:
+  post:
+    tags:
+      - Movement
+    summary: Teleport to a location
+    description: |
+      Teleport the player to a specific location. Requires appropriate permissions.
+    operationId: moveTeleport
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - destination
+            properties:
+              destination:
+                $ref: '../schemas/common.yaml#/components/schemas/ObjectId'
+    responses:
+      '200':
+        description: Teleport successful
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        newLocation:
+                          $ref: '../schemas/common.yaml#/components/schemas/Room'
+                        message:
+                          type: string
+                          example: "You teleport to the destination."
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Cannot teleport to that location
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Destination not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+movement_home:
+  post:
+    tags:
+      - Movement
+    summary: Go home
+    description: |
+      Move the player to their home location.
+    operationId: moveHome
+    responses:
+      '200':
+        description: Home movement successful
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        newLocation:
+                          $ref: '../schemas/common.yaml#/components/schemas/Room'
+                        message:
+                          type: string
+                          example: "You go home."
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Home location not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+movement_follow:
+  post:
+    tags:
+      - Movement
+    summary: Follow another player
+    description: |
+      Start following another player's movements.
+    operationId: moveFollow
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - target
+            properties:
+              target:
+                $ref: '../schemas/common.yaml#/components/schemas/UserId'
+              stop:
+                type: boolean
+                description: Set to true to stop following
+                default: false
+    responses:
+      '200':
+        description: Follow command successful
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "You start following Gandalf."
+                        following:
+                          $ref: '../schemas/common.yaml#/components/schemas/UserId'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Cannot follow that player
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '404':
+        description: Target player not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'

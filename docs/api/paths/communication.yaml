@@ -1,0 +1,390 @@
+messages_say:
+  post:
+    tags:
+      - Communication
+    summary: Send a "say" message to current location
+    description: |
+      Send a message to all users in the same location using the "say" command.
+      This is the equivalent of speaking aloud in the current room.
+    operationId: sayMessage
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                description: The message to say
+                example: "Hello everyone!"
+    responses:
+      '200':
+        description: Message sent successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                        - $ref: '../schemas/common.yaml#/components/schemas/Message'
+                        - type: object
+                          properties:
+                            recipients:
+                              type: array
+                              items:
+                                $ref: '../schemas/common.yaml#/components/schemas/UserId'
+                              description: List of users who received the message
+            examples:
+              say_message:
+                summary: Say message sent
+                value:
+                  success: true
+                  data:
+                    id: "msg_123456"
+                    type: "say"
+                    sender: 1001
+                    content: "Hello everyone!"
+                    timestamp: "2024-12-12T15:57:00Z"
+                    location: 12345
+                    recipients: [1001, 1002, 1003]
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Cannot speak in this location (silenced, haven, etc.)
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+messages_pose:
+  post:
+    tags:
+      - Communication
+    summary: Send a "pose" message to current location
+    description: |
+      Send a pose (action) message to all users in the same location.
+      This is the equivalent of performing an action that others can see.
+    operationId: poseMessage
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - action
+            properties:
+              action:
+                type: string
+                description: The action to perform
+                example: "waves hello to everyone"
+    responses:
+      '200':
+        description: Pose sent successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                        - $ref: '../schemas/common.yaml#/components/schemas/Message'
+                        - type: object
+                          properties:
+                            recipients:
+                              type: array
+                              items:
+                                $ref: '../schemas/common.yaml#/components/schemas/UserId'
+                              description: List of users who received the message
+            examples:
+              pose_message:
+                summary: Pose message sent
+                value:
+                  success: true
+                  data:
+                    id: "msg_123457"
+                    type: "pose"
+                    sender: 1001
+                    content: "waves hello to everyone"
+                    timestamp: "2024-12-12T15:57:00Z"
+                    location: 12345
+                    recipients: [1001, 1002, 1003]
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Cannot pose in this location
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+messages_whisper:
+  post:
+    tags:
+      - Communication
+    summary: Send a whisper message to specific users
+    description: |
+      Send a private whisper message to specific users in the same location.
+      Only the sender and specified recipients can see the message.
+    operationId: whisperMessage
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - recipients
+              - message
+            properties:
+              recipients:
+                type: array
+                items:
+                  $ref: '../schemas/common.yaml#/components/schemas/UserId'
+                description: List of users to whisper to
+              message:
+                type: string
+                description: The message to whisper
+                example: "Meet me at the library later"
+    responses:
+      '200':
+        description: Whisper sent successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../schemas/common.yaml#/components/schemas/Message'
+            examples:
+              whisper_message:
+                summary: Whisper message sent
+                value:
+                  success: true
+                  data:
+                    id: "msg_123458"
+                    type: "whisper"
+                    sender: 1001
+                    recipients: [1002]
+                    content: "Meet me at the library later"
+                    timestamp: "2024-12-12T15:57:00Z"
+                    location: 12345
+                  timestamp: "2024-12-12T15:57:00Z"
+      '400':
+        description: Invalid recipients or message
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Cannot whisper to some recipients
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+messages_page:
+  post:
+    tags:
+      - Communication
+    summary: Send a page message to users anywhere
+    description: |
+      Send a page message to users anywhere in the virtual world.
+      This is the equivalent of long-distance communication.
+    operationId: pageMessage
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - recipients
+              - message
+            properties:
+              recipients:
+                type: array
+                items:
+                  $ref: '../schemas/common.yaml#/components/schemas/UserId'
+                description: List of users to page
+              message:
+                type: string
+                description: The message to send
+                example: "Are you available to help with the quest?"
+              priority:
+                type: string
+                enum: [low, normal, high, urgent]
+                default: normal
+                description: Message priority level
+    responses:
+      '200':
+        description: Page sent successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                        - $ref: '../schemas/common.yaml#/components/schemas/Message'
+                        - type: object
+                          properties:
+                            deliveryStatus:
+                              type: object
+                              properties:
+                                delivered:
+                                  type: array
+                                  items:
+                                    $ref: '../schemas/common.yaml#/components/schemas/UserId'
+                                failed:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      userId:
+                                        $ref: '../schemas/common.yaml#/components/schemas/UserId'
+                                      reason:
+                                        type: string
+            examples:
+              page_message:
+                summary: Page message sent
+                value:
+                  success: true
+                  data:
+                    id: "msg_123459"
+                    type: "page"
+                    sender: 1001
+                    recipients: [1002, 1003]
+                    content: "Are you available to help with the quest?"
+                    priority: "normal"
+                    timestamp: "2024-12-12T15:57:00Z"
+                    deliveryStatus:
+                      delivered: [1002]
+                      failed:
+                        - userId: 1003
+                          reason: "User is away"
+                  timestamp: "2024-12-12T15:57:00Z"
+      '400':
+        description: Invalid recipients or message
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Cannot page some recipients
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+
+messages_broadcast:
+  post:
+    tags:
+      - Communication
+    summary: Send a broadcast message to all users
+    description: |
+      Send a broadcast message to all users in the virtual world.
+      This requires appropriate administrative permissions.
+    operationId: broadcastMessage
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                description: The message to broadcast
+                example: "Server maintenance will begin in 10 minutes"
+              category:
+                type: string
+                enum: [announcement, system, emergency, news]
+                default: announcement
+                description: Broadcast category
+              priority:
+                type: string
+                enum: [low, normal, high, urgent]
+                default: normal
+                description: Message priority level
+    responses:
+      '200':
+        description: Broadcast sent successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../schemas/common.yaml#/components/schemas/SuccessResponse'
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                        - $ref: '../schemas/common.yaml#/components/schemas/Message'
+                        - type: object
+                          properties:
+                            recipientCount:
+                              type: integer
+                              description: Number of users who received the broadcast
+            examples:
+              broadcast_message:
+                summary: Broadcast message sent
+                value:
+                  success: true
+                  data:
+                    id: "msg_123460"
+                    type: "broadcast"
+                    sender: 1001
+                    content: "Server maintenance will begin in 10 minutes"
+                    category: "announcement"
+                    priority: "high"
+                    timestamp: "2024-12-12T15:57:00Z"
+                    recipientCount: 25
+                  timestamp: "2024-12-12T15:57:00Z"
+      '401':
+        description: Authentication required
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'
+      '403':
+        description: Insufficient permissions to broadcast
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/common.yaml#/components/schemas/ErrorResponse'

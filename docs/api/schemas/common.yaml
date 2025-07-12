@@ -1,0 +1,561 @@
+components:
+  schemas:
+    # Core Object Types
+    ObjectType:
+      type: string
+      enum: [room, thing, exit, player]
+      description: The type of object in the virtual world
+    
+    ObjectId:
+      type: integer
+      format: int64
+      description: Database reference ID for an object
+      example: 12345
+    
+    UserId:
+      type: integer
+      format: int64
+      description: Database reference ID for a user/player
+      example: 1001
+    
+    # User Management
+    User:
+      type: object
+      required:
+        - id
+        - name
+        - class
+        - connected
+        - created
+      properties:
+        id:
+          $ref: '#/components/schemas/UserId'
+        name:
+          type: string
+          description: User's display name
+          example: "Gandalf"
+        class:
+          $ref: '#/components/schemas/UserClass'
+        connected:
+          type: boolean
+          description: Whether the user is currently online
+        lastSeen:
+          type: string
+          format: date-time
+          description: When the user was last seen online
+        created:
+          type: string
+          format: date-time
+          description: When the user account was created
+        location:
+          $ref: '#/components/schemas/ObjectId'
+        description:
+          type: string
+          description: User's description/bio
+        home:
+          $ref: '#/components/schemas/ObjectId'
+        credits:
+          type: integer
+          description: User's available credits
+        quota:
+          type: integer
+          description: User's object creation quota
+        powers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Power'
+        flags:
+          type: array
+          items:
+            type: string
+          description: User-specific flags
+        idleTime:
+          type: integer
+          description: Seconds user has been idle
+        doing:
+          type: string
+          description: User's current status message
+    
+    UserClass:
+      type: string
+      enum: [guest, visitor, group, citizen, pcitizen, guide, official, builder, admin, director]
+      description: User's privilege class
+    
+    Power:
+      type: object
+      required:
+        - name
+        - level
+      properties:
+        name:
+          type: string
+          description: Name of the power
+          example: "POW_ANNOUNCE"
+        level:
+          type: string
+          enum: [yes, yeseq, yeslt, no]
+          description: Power level and scope
+        description:
+          type: string
+          description: Description of what this power allows
+    
+    # Virtual World Objects
+    VirtualObject:
+      type: object
+      required:
+        - id
+        - name
+        - type
+        - owner
+        - created
+        - modified
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectId'
+        name:
+          type: string
+          description: Object's display name
+          example: "A magical sword"
+        type:
+          $ref: '#/components/schemas/ObjectType'
+        owner:
+          $ref: '#/components/schemas/UserId'
+        location:
+          $ref: '#/components/schemas/ObjectId'
+        zone:
+          $ref: '#/components/schemas/ObjectId'
+        contents:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObjectId'
+        description:
+          type: string
+          description: Object's detailed description
+        shortDescription:
+          type: string
+          description: Brief description for listings
+        flags:
+          type: array
+          items:
+            type: string
+          description: Object flags (dark, sticky, haven, etc.)
+        attributes:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Attribute'
+        created:
+          type: string
+          format: date-time
+        modified:
+          type: string
+          format: date-time
+        value:
+          type: integer
+          description: Object's credit value
+        locks:
+          type: object
+          additionalProperties:
+            type: string
+          description: Access control locks
+    
+    # Room-specific object
+    Room:
+      allOf:
+        - $ref: '#/components/schemas/VirtualObject'
+        - type: object
+          properties:
+            exits:
+              type: array
+              items:
+                $ref: '#/components/schemas/Exit'
+            occupants:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserId'
+            capacity:
+              type: integer
+              description: Maximum occupancy
+            environment:
+              type: string
+              description: Room's environmental characteristics
+    
+    # Exit-specific object
+    Exit:
+      allOf:
+        - $ref: '#/components/schemas/VirtualObject'
+        - type: object
+          properties:
+            source:
+              $ref: '#/components/schemas/ObjectId'
+            destination:
+              $ref: '#/components/schemas/ObjectId'
+            direction:
+              type: string
+              description: Direction name (north, south, up, etc.)
+            aliases:
+              type: array
+              items:
+                type: string
+              description: Alternative names for the exit
+    
+    # Attribute system
+    Attribute:
+      type: object
+      required:
+        - name
+        - value
+      properties:
+        name:
+          type: string
+          description: Attribute name
+        value:
+          type: string
+          description: Attribute value
+        type:
+          type: string
+          enum: [string, integer, boolean, reference]
+        flags:
+          type: array
+          items:
+            type: string
+          description: Attribute flags (inherit, no_clone, etc.)
+        owner:
+          $ref: '#/components/schemas/UserId'
+        created:
+          type: string
+          format: date-time
+        modified:
+          type: string
+          format: date-time
+    
+    # Communication
+    Message:
+      type: object
+      required:
+        - id
+        - type
+        - sender
+        - content
+        - timestamp
+      properties:
+        id:
+          type: string
+          description: Unique message identifier
+        type:
+          type: string
+          enum: [say, pose, whisper, page, broadcast, channel, mail]
+        sender:
+          $ref: '#/components/schemas/UserId'
+        recipients:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserId'
+        content:
+          type: string
+          description: Message content
+        timestamp:
+          type: string
+          format: date-time
+        location:
+          $ref: '#/components/schemas/ObjectId'
+        channel:
+          type: string
+          description: Channel name for channel messages
+        read:
+          type: boolean
+          description: Whether message has been read (for mail)
+        priority:
+          type: string
+          enum: [low, normal, high, urgent]
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional message metadata
+    
+    # Channel system
+    Channel:
+      type: object
+      required:
+        - id
+        - name
+        - type
+      properties:
+        id:
+          type: string
+          description: Channel identifier
+        name:
+          type: string
+          description: Channel display name
+        type:
+          type: string
+          enum: [public, private, admin, system]
+        description:
+          type: string
+          description: Channel description
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserId'
+        moderators:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserId'
+        settings:
+          type: object
+          properties:
+            muted:
+              type: boolean
+            history:
+              type: boolean
+            aliases:
+              type: array
+              items:
+                type: string
+        created:
+          type: string
+          format: date-time
+        active:
+          type: boolean
+    
+    # Economic system
+    Transaction:
+      type: object
+      required:
+        - id
+        - type
+        - amount
+        - from
+        - to
+        - timestamp
+      properties:
+        id:
+          type: string
+          description: Transaction identifier
+        type:
+          type: string
+          enum: [payment, creation_cost, destruction_refund, admin_adjustment]
+        amount:
+          type: integer
+          description: Credit amount
+        from:
+          $ref: '#/components/schemas/UserId'
+        to:
+          $ref: '#/components/schemas/UserId'
+        objectId:
+          $ref: '#/components/schemas/ObjectId'
+        description:
+          type: string
+          description: Transaction description
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [pending, completed, failed, cancelled]
+    
+    # System information
+    SystemInfo:
+      type: object
+      properties:
+        version:
+          type: string
+          description: Server version
+        uptime:
+          type: integer
+          description: Server uptime in seconds
+        startTime:
+          type: string
+          format: date-time
+        connectedUsers:
+          type: integer
+          description: Number of connected users
+        totalObjects:
+          type: integer
+          description: Total objects in database
+        databaseSize:
+          type: integer
+          description: Database size in bytes
+        memoryUsage:
+          type: integer
+          description: Memory usage in bytes
+        buildInfo:
+          type: object
+          properties:
+            compiler:
+              type: string
+            buildDate:
+              type: string
+            gitCommit:
+              type: string
+    
+    # API Response wrappers
+    SuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          description: Response data
+        message:
+          type: string
+          description: Optional success message
+        timestamp:
+          type: string
+          format: date-time
+    
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Error code
+            message:
+              type: string
+              description: Human-readable error message
+            details:
+              type: object
+              description: Additional error details
+        timestamp:
+          type: string
+          format: date-time
+    
+    # Authentication
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: User's login name
+        password:
+          type: string
+          format: password
+          description: User's password
+    
+    LoginResponse:
+      type: object
+      required:
+        - token
+        - user
+        - expires
+      properties:
+        token:
+          type: string
+          description: JWT authentication token
+        user:
+          $ref: '#/components/schemas/User'
+        expires:
+          type: string
+          format: date-time
+          description: Token expiration time
+        refreshToken:
+          type: string
+          description: Refresh token for obtaining new access tokens
+    
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - password
+        - email
+      properties:
+        username:
+          type: string
+          description: Desired username
+        password:
+          type: string
+          format: password
+          description: User's password
+        email:
+          type: string
+          format: email
+          description: User's email address
+        description:
+          type: string
+          description: Optional user description
+    
+    # Pagination
+    PaginatedResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+        pagination:
+          type: object
+          required:
+            - page
+            - limit
+            - total
+            - totalPages
+          properties:
+            page:
+              type: integer
+              description: Current page number
+            limit:
+              type: integer
+              description: Items per page
+            total:
+              type: integer
+              description: Total number of items
+            totalPages:
+              type: integer
+              description: Total number of pages
+            hasNext:
+              type: boolean
+              description: Whether there are more pages
+            hasPrevious:
+              type: boolean
+              description: Whether there are previous pages
+    
+    # Search and filtering
+    SearchRequest:
+      type: object
+      properties:
+        query:
+          type: string
+          description: Search query
+        filters:
+          type: object
+          additionalProperties:
+            type: string
+          description: Search filters
+        sort:
+          type: string
+          description: Sort field
+        order:
+          type: string
+          enum: [asc, desc]
+          description: Sort order
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
