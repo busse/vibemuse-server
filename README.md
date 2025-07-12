@@ -38,6 +38,14 @@ Comprehensive documentation for the TinyMUSE codebase:
 - **[Modernization Opportunities](docs/potential-issues.md)** - Areas for improvement and modernization
 - **[API Documentation](docs/api/README.md)** - RESTful API specification and documentation
 
+## Modernization Documentation
+
+Development plan for porting TinyMUSE to modern web architecture:
+
+- **[Development Plan](docs/DEVELOPMENT_PLAN.md)** - Comprehensive roadmap for modernization with tech stack progression
+- **[Modernization Architecture](docs/MODERNIZATION_ARCHITECTURE.md)** - Technical architecture design for modern web stack
+- **[Implementation Guide](docs/IMPLEMENTATION_GUIDE.md)** - Practical step-by-step implementation instructions
+
 ## Server Administration
 
 See [ADMIN.md](ADMIN.md)
