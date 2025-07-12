@@ -28,6 +28,14 @@ This project is maintained by [Belisarius Smith](https://www.belisariussmith.com
 
 This project is a work of love, in appreciation for all the hours of fun from running (and playing) my first MUD server... to all those who wrote, maintained, and played, I thank you.
 
+## 🚀 Modernization Project Status
+
+> **Current Phase**: 📋 **Planning & Documentation** (Complete)  
+> **Status**: Documentation phase complete, ready to begin Phase 1 development  
+> **Next Phase**: Phase 1 - Foundation & Database (Weeks 1-4)
+
+**📊 [View Full Project Tracker](docs/PROJECT_TRACKER.md)** - Track progress through all 7 development phases of the TinyMUSE modernization project.
+
 ## Documentation
 
 Comprehensive documentation for the TinyMUSE codebase:
@@ -37,6 +45,15 @@ Comprehensive documentation for the TinyMUSE codebase:
 - **[Features](docs/features.md)** - Complete list of application features
 - **[Modernization Opportunities](docs/potential-issues.md)** - Areas for improvement and modernization
 - **[API Documentation](docs/api/README.md)** - RESTful API specification and documentation
+
+## Modernization Documentation
+
+Development plan for porting TinyMUSE to modern web architecture:
+
+- **[📊 Project Tracker](docs/PROJECT_TRACKER.md)** - **Live progress tracking** through all 7 development phases with milestones and timelines
+- **[Development Plan](docs/DEVELOPMENT_PLAN.md)** - Comprehensive roadmap for modernization with tech stack progression
+- **[Modernization Architecture](docs/MODERNIZATION_ARCHITECTURE.md)** - Technical architecture design for modern web stack
+- **[Implementation Guide](docs/IMPLEMENTATION_GUIDE.md)** - Practical step-by-step implementation instructions
 
 ## Server Administration
 
