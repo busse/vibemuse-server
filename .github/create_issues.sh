@@ -32,21 +32,50 @@ NC='\033[0m' # No Color
 portable_date_add() {
     local base_date="$1"
     local weeks="$2"
+    local result=""
     
     # Check if we have GNU date or BSD date
     if date --version >/dev/null 2>&1; then
         # GNU date (Linux)
         if [ -n "$base_date" ]; then
-            date -d "$base_date +${weeks} weeks" +%Y-%m-%d
+            result=$(date -d "$base_date +${weeks} weeks" +%Y-%m-%d 2>/dev/null)
         else
-            date -d "+${weeks} weeks" +%Y-%m-%d
+            result=$(date -d "+${weeks} weeks" +%Y-%m-%d 2>/dev/null)
         fi
     else
         # BSD date (macOS)
         if [ -n "$base_date" ]; then
-            date -j -f "%Y-%m-%d" "$base_date" -v+${weeks}w +%Y-%m-%d
+            result=$(date -j -f "%Y-%m-%d" "$base_date" -v+${weeks}w +%Y-%m-%d 2>/dev/null)
         else
-            date -v+${weeks}w +%Y-%m-%d
+            result=$(date -v+${weeks}w +%Y-%m-%d 2>/dev/null)
+        fi
+    fi
+    
+    # Validate result format (should be YYYY-MM-DD)
+    if [[ "$result" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+        echo "$result"
+    else
+        # Fallback: use current date and add weeks manually
+        if [ "$DEBUG" = "true" ]; then
+            echo "Warning: Date calculation failed, using fallback method" >&2
+        fi
+        # Use python as a fallback if available
+        if command -v python3 >/dev/null 2>&1; then
+            python3 -c "
+import datetime
+base = datetime.date.today()
+if '$base_date':
+    try:
+        base = datetime.datetime.strptime('$base_date', '%Y-%m-%d').date()
+    except:
+        pass
+result = base + datetime.timedelta(weeks=$weeks)
+print(result.strftime('%Y-%m-%d'))
+"
+        else
+            # Last resort: calculate manually using current date
+            current_date=$(date +%Y-%m-%d)
+            echo "$current_date"
         fi
     fi
 }
@@ -286,6 +315,22 @@ create_label "testing" "8c564b" "Testing and quality assurance"
 create_label "documentation" "e377c2" "Documentation tasks"
 create_label "performance" "7f7f7f" "Performance optimization tasks"
 create_label "project-management" "17becf" "Project management tasks"
+
+# Additional labels used in issue templates
+create_label "tracking" "b60205" "Progress tracking and monitoring"
+create_label "foundation" "1d76db" "Foundational architecture tasks"
+create_label "migration" "0e8a16" "Data migration tasks"
+create_label "data" "f9c23c" "Data handling and processing"
+create_label "validation" "5319e7" "Data validation and verification"
+create_label "quality" "006b75" "Quality assurance and control"
+create_label "authentication" "c2e0c6" "Authentication and authorization"
+create_label "objects" "fef2c0" "Object management and manipulation"
+create_label "users" "bfdadc" "User management and operations"
+create_label "communication" "84b6eb" "Communication systems"
+create_label "websocket" "c5def5" "WebSocket and real-time features"
+create_label "movement" "fbca04" "Movement and navigation systems"
+create_label "navigation" "d4c5f9" "Navigation and pathfinding"
+create_label "react" "0052cc" "React frontend development"
 
 echo
 
