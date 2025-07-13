@@ -86,8 +86,11 @@ Development plan and architecture for the VibeMUSE modernization:
 This repository is organized to clearly separate the legacy TinyMUSE reference code from the modern VibeMUSE development project:
 
 ### VibeMUSE Modernization (Root Level)
+- **`api/`** - Node.js/Express API server with TypeScript
+- **`supabase/`** - Database migrations and Supabase configuration
+- **`types/`** - Generated TypeScript types for Supabase
 - **`docs/`** - VibeMUSE modernization documentation and architecture
-- **`.github/`** - GitHub issues and project management for development phases
+- **`.github/`** - GitHub Actions workflows and project management
 - **`README.md`** - This file, describing the VibeMUSE modernization project
 
 ### Legacy TinyMUSE Reference (`legacy/`)
@@ -99,6 +102,36 @@ This repository is organized to clearly separate the legacy TinyMUSE reference c
 - **`legacy/DATABASE.md`** - Original TinyMUSE database format documentation
 
 The legacy directory contains the original TinyMUSE code preserved as reference documentation for the modernization project.
+
+## Development Setup
+
+### Prerequisites
+- Node.js 18+
+- npm
+- Supabase CLI (for database management)
+
+### Quick Start
+```bash
+# Install dependencies
+npm install
+
+# Development with local database
+npm run supabase:start    # Start local Supabase stack
+npm run supabase:reset    # Apply migrations and seed data
+npm run dev               # Start development server
+
+# Build and test
+npm run build
+npm run test
+npm run lint
+```
+
+### Database Management
+- **Local Development**: Use `npm run supabase:*` scripts for local Supabase stack
+- **CI/CD**: GitHub Actions automatically manage database migrations and type generation
+- **Production**: Deployments to main branch automatically sync to cloud Supabase
+
+For detailed CI/CD setup including GitHub secrets configuration, see [GitHub Actions Supabase Integration](.github/SUPABASE_SETUP.md).
 
 ## Server Administration
 

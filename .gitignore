@@ -76,6 +76,9 @@ Thumbs.db
 .temp
 .temp/
 
+# Generated types (generated during CI, but we'll keep the template files)
+types/supabase.gen.ts
+
 # Database dumps (but keep seed files)
 *.dump
 backups/*.sql
