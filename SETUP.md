@@ -73,8 +73,9 @@ vibemuse-server/
 
 ### Supabase Setup
 
-The project uses Supabase as the primary database and backend-as-a-service platform:
+The project uses Supabase as the primary database and backend-as-a-service platform. For detailed setup instructions, see the **[Supabase Setup Guide](docs/SUPABASE_SETUP.md)**.
 
+Quick summary:
 - **Database**: PostgreSQL 17
 - **Real-time**: WebSocket subscriptions enabled
 - **Authentication**: JWT-based with custom claims
