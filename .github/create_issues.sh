@@ -132,7 +132,7 @@ create_milestone() {
         --method POST \
         --field title="$title" \
         --field description="$description" \
-        --field due_on="$due_date" 2>&1) || exit_code=$?
+        --field due_on="${due_date}T23:59:59Z" 2>&1) || exit_code=$?
     
     if [ $exit_code -eq 0 ]; then
         echo -e "${GREEN}✓ Milestone created: $title${NC}"
