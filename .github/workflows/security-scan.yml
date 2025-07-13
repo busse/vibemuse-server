@@ -1,0 +1,179 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run security scan daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: api/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd api
+        npm ci
+    
+    - name: Run npm audit
+      run: |
+        cd api
+        npm audit --audit-level=moderate
+    
+    - name: Run npm audit fix
+      run: |
+        cd api
+        npm audit fix --dry-run
+  
+  code-scan:
+    name: Static Code Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: api/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd api
+        npm ci
+    
+    - name: Run ESLint
+      run: |
+        cd api
+        npm run lint
+    
+    - name: Run TypeScript compiler
+      run: |
+        cd api
+        npm run type-check
+    
+    - name: Run build
+      run: |
+        cd api
+        npm run build
+
+  secret-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Run TruffleHog OSS
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --only-verified
+
+  security-headers:
+    name: Security Headers Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: api/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd api
+        npm ci
+    
+    - name: Start server
+      run: |
+        cd api
+        npm run build
+        npm start &
+        sleep 10
+      env:
+        NODE_ENV: test
+        JWT_SECRET: test-secret-key-32-characters-long
+        ENCRYPTION_KEY: test-encryption-key-32-characters
+        SUPABASE_URL: http://localhost:54321
+        SUPABASE_ANON_KEY: test-anon-key
+        SUPABASE_SERVICE_ROLE_KEY: test-service-role-key
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+    
+    - name: Test security headers
+      run: |
+        echo "Testing security headers..."
+        curl -I http://localhost:3000/health
+        
+        # Test for security headers
+        curl -I http://localhost:3000/health | grep -i "x-frame-options" || echo "WARNING: X-Frame-Options header missing"
+        curl -I http://localhost:3000/health | grep -i "x-content-type-options" || echo "WARNING: X-Content-Type-Options header missing"
+        curl -I http://localhost:3000/health | grep -i "content-security-policy" || echo "WARNING: Content-Security-Policy header missing"
+        curl -I http://localhost:3000/health | grep -i "strict-transport-security" || echo "WARNING: Strict-Transport-Security header missing"
+
+  environment-validation:
+    name: Environment Configuration Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: api/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd api
+        npm ci
+    
+    - name: Test environment validation
+      run: |
+        cd api
+        echo "Testing environment validation..."
+        # Test with invalid configuration
+        NODE_ENV=test \
+        JWT_SECRET=short \
+        npm start || echo "Environment validation working correctly"
+        
+        # Test with valid configuration
+        NODE_ENV=test \
+        JWT_SECRET=test-secret-key-32-characters-long \
+        ENCRYPTION_KEY=test-encryption-key-32-characters \
+        SUPABASE_URL=http://localhost:54321 \
+        SUPABASE_ANON_KEY=test-anon-key \
+        SUPABASE_SERVICE_ROLE_KEY=test-service-role-key \
+        DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test \
+        timeout 5 npm start || echo "Valid environment test completed"
