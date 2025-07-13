@@ -60,6 +60,22 @@ This project is a work of love, in appreciation for all the hours of fun from ru
 
 **📊 [View Full Project Tracker](docs/PROJECT_TRACKER.md)** - Track progress through all 7 development phases of the VibeMUSE modernization project.
 
+### What's Working Now
+✅ **Complete Phase 1 Foundation:**
+- PostgreSQL database schema with 7 core tables
+- Supabase integration with real-time capabilities
+- Node.js/Express API server with TypeScript
+- GitHub Actions CI/CD pipeline
+- Local development environment
+- Database migrations and seed data
+
+### What's Next
+🚀 **Phase 2 - Core API Infrastructure:**
+- Authentication system implementation
+- User management API endpoints
+- Object management system (rooms, things, exits, players)
+- Session management with JWT integration
+
 ## VibeMUSE Documentation
 
 Comprehensive documentation for the VibeMUSE modernization project:
@@ -108,30 +124,69 @@ The legacy directory contains the original TinyMUSE code preserved as reference 
 ### Prerequisites
 - Node.js 18+
 - npm
+- Docker (for local Supabase stack)
 - Supabase CLI (for database management)
 
 ### Quick Start
+
+**For Development:**
 ```bash
-# Install dependencies
+# 1. Clone and install dependencies
+git clone [repository-url]
+cd vibemuse-server
 npm install
 
-# Development with local database
+# 2. Start local database
 npm run supabase:start    # Start local Supabase stack
 npm run supabase:reset    # Apply migrations and seed data
-npm run dev               # Start development server
 
-# Build and test
+# 3. Start development server
+npm run dev               # API server runs on http://localhost:3000
+```
+
+**For Production Setup:**
+See [SETUP.md](SETUP.md) for detailed production deployment instructions.
+
+**For Testing:**
+```bash
 npm run build
 npm run test
 npm run lint
 ```
 
-### Database Management
-- **Local Development**: Use `npm run supabase:*` scripts for local Supabase stack
-- **CI/CD**: GitHub Actions automatically manage database migrations and type generation
-- **Production**: Deployments to main branch automatically sync to cloud Supabase
+### Database Management & CI/CD
+
+The project uses a comprehensive CI/CD pipeline with GitHub Actions for database operations:
+
+- **Local Development**: 
+  - Use `npm run supabase:start` to start local Supabase stack
+  - Use `npm run supabase:reset` to apply migrations and seed data
+  - Use `npm run supabase:types` to generate TypeScript types
+  
+- **Pull Request Testing**: 
+  - GitHub Actions automatically spins up ephemeral Supabase containers
+  - Runs migrations and tests against temporary database
+  - Ensures safe testing without affecting production
+
+- **Production Deployment**: 
+  - Merges to main branch automatically deploy to cloud Supabase
+  - Database migrations are executed automatically
+  - TypeScript types are regenerated and committed back
 
 For detailed CI/CD setup including GitHub secrets configuration, see [GitHub Actions Supabase Integration](.github/SUPABASE_SETUP.md).
+
+### Troubleshooting
+
+**Common Issues:**
+- **"Docker not found"**: Install Docker Desktop and ensure it's running
+- **"Port already in use"**: Stop other services on ports 54321-54324, or use `npm run supabase:stop` first
+- **"Cannot connect to database"**: Ensure Supabase is running with `npm run supabase:start`
+- **"TypeScript errors"**: Run `npm run supabase:types` to regenerate database types
+
+**Getting Help:**
+1. Check [SETUP.md](SETUP.md) for detailed setup instructions
+2. Review [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) for database configuration
+3. Check existing GitHub issues for similar problems
 
 ## Server Administration
 
