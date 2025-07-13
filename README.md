@@ -78,6 +78,7 @@ Development plan and architecture for the VibeMUSE modernization:
 - **[Development Plan](docs/DEVELOPMENT_PLAN.md)** - Comprehensive roadmap for modernization with tech stack progression
 - **[Modernization Architecture](docs/MODERNIZATION_ARCHITECTURE.md)** - Technical architecture design for modern web stack
 - **[Implementation Guide](docs/IMPLEMENTATION_GUIDE.md)** - Practical step-by-step implementation instructions
+- **[📋 Changelog](CHANGELOG.md)** - Security updates, infrastructure improvements, and ongoing maintenance activities
 
 ## Repository Structure
 
