@@ -17,6 +17,31 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Portable date arithmetic function
+# Usage: portable_date_add <base_date> <weeks_to_add>
+# If base_date is empty, uses current date
+portable_date_add() {
+    local base_date="$1"
+    local weeks="$2"
+    
+    # Check if we have GNU date or BSD date
+    if date --version >/dev/null 2>&1; then
+        # GNU date (Linux)
+        if [ -n "$base_date" ]; then
+            date -d "$base_date +${weeks} weeks" +%Y-%m-%d
+        else
+            date -d "+${weeks} weeks" +%Y-%m-%d
+        fi
+    else
+        # BSD date (macOS)
+        if [ -n "$base_date" ]; then
+            date -j -f "%Y-%m-%d" "$base_date" -v+${weeks}w +%Y-%m-%d
+        else
+            date -v+${weeks}w +%Y-%m-%d
+        fi
+    fi
+}
+
 echo -e "${BLUE}VibeMUSE GitHub Issues Creation Tool${NC}"
 echo -e "${BLUE}===================================${NC}"
 echo
@@ -114,16 +139,16 @@ echo -e "${BLUE}Creating GitHub Milestones...${NC}"
 echo
 
 # Calculate milestone dates (assuming start date is 4 weeks from now)
-START_DATE=$(date -d "+4 weeks" +%Y-%m-%d)
+START_DATE=$(portable_date_add "" "4")
 
 create_milestone "Project Setup" "Initial project setup and infrastructure" "$START_DATE"
-create_milestone "Phase 1 - Foundation & Database" "Database schema, Supabase setup, and migration tools" "$(date -d "$START_DATE +4 weeks" +%Y-%m-%d)"
-create_milestone "Phase 2 - Core API Infrastructure" "Authentication, user management, and object APIs" "$(date -d "$START_DATE +8 weeks" +%Y-%m-%d)"
-create_milestone "Phase 3 - Game Mechanics APIs" "Real-time communication and movement systems" "$(date -d "$START_DATE +12 weeks" +%Y-%m-%d)"
-create_milestone "Phase 4 - World Building & Administration" "Building tools and administrative interfaces" "$(date -d "$START_DATE +16 weeks" +%Y-%m-%d)"
-create_milestone "Phase 5 - Advanced Features" "Complex interactions and system optimization" "$(date -d "$START_DATE +20 weeks" +%Y-%m-%d)"
-create_milestone "Phase 6 - Frontend Development" "React application and user interfaces" "$(date -d "$START_DATE +28 weeks" +%Y-%m-%d)"
-create_milestone "Phase 7 - Testing & Polish" "Testing, optimization, and production readiness" "$(date -d "$START_DATE +32 weeks" +%Y-%m-%d)"
+create_milestone "Phase 1 - Foundation & Database" "Database schema, Supabase setup, and migration tools" "$(portable_date_add "$START_DATE" "4")"
+create_milestone "Phase 2 - Core API Infrastructure" "Authentication, user management, and object APIs" "$(portable_date_add "$START_DATE" "8")"
+create_milestone "Phase 3 - Game Mechanics APIs" "Real-time communication and movement systems" "$(portable_date_add "$START_DATE" "12")"
+create_milestone "Phase 4 - World Building & Administration" "Building tools and administrative interfaces" "$(portable_date_add "$START_DATE" "16")"
+create_milestone "Phase 5 - Advanced Features" "Complex interactions and system optimization" "$(portable_date_add "$START_DATE" "20")"
+create_milestone "Phase 6 - Frontend Development" "React application and user interfaces" "$(portable_date_add "$START_DATE" "28")"
+create_milestone "Phase 7 - Testing & Polish" "Testing, optimization, and production readiness" "$(portable_date_add "$START_DATE" "32")"
 
 echo
 
