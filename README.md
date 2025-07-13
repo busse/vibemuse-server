@@ -20,38 +20,6 @@ VibeMUSE stands on the shoulders of the original TinyMUSE project, modernizing i
 - **Authentication**: JWT + session-based hybrid approach
 - **Real-time**: WebSocket for live communication
 
-## Original TinyMUSE Attribution
-
-VibeMUSE is built upon the foundation of TinyMUSE, created after the MUD codebase explosion of 1990 and based on version 1.5 of TinyMUSH. We honor and acknowledge the original work and contributors who made this project possible.
-
-### Original TinyMUSE History
-
-TinyMUSE was based on TinyMUD and had a fairly short lifespan, being quickly surpassed by its contemporaries. Though updated occasionally, it was largely a dead project with a small server population. The original v1.9f3 code was outdated and difficult to compile and run.
-
-The original TinyMUSE repository was created by [Belisarius Smith](https://www.belisariussmith.com/ "Belisarius Smith") for preservation and posterity, providing a compilable and working version with minor cleanup and improvements to meet modern C standards.
-
-### Original TinyMUSE Contributors
-
-- Jin (original author)
-
-### v1.0 - v1.8a4
-- Nils McCarthy (@shkoo, **nils@chezmoto.ai.mit.edu**)
-- Erk (@Erk, **erk@chezmoto.ai.mit.edu**)
-- Michael (@Bard **michael@chezmoto.ai.mit.edu**)
-
-### v1.8a4 - v1.9f3
-- Mark Eisenstat (@Morgoth **meisen@musenet.org**)
-- Jason Hula (@Power_Shaper)
-- Rick Harby (@Tabok **rharby@eznet.net**)
-- Robert Peperkamp (@Redone **rpeperkamp@envirolink.org**) 
-
-### v2.0
-- Belisarius Smith (@Balr)
-
-This project is a work of love, in appreciation for all the hours of fun from running (and playing) the original TinyMUSE server. To all those who wrote, maintained, and played, we thank you.
-
-**VibeMUSE respects and adheres to the original TinyMUSE attribution requirements.** See [COPYRIGHT.md](COPYRIGHT.md) for full details on the original licensing terms, which require proper attribution for academic and educational use.
-
 ## 🚀 VibeMUSE Development Status
 
 > **Current Phase**: 🚀 **Phase 1 - Foundation & Database** (Complete)  
@@ -195,6 +163,38 @@ See [legacy/ADMIN.md](legacy/ADMIN.md)
 ## Version
 
 VibeMUSE is currently in **Phase 1: Foundation & Database** (Complete).
+
+## Original TinyMUSE Attribution
+
+VibeMUSE is built upon the foundation of TinyMUSE, created after the MUD codebase explosion of 1990 and based on version 1.5 of TinyMUSH. We honor and acknowledge the original work and contributors who made this project possible.
+
+### Original TinyMUSE History
+
+TinyMUSE was based on TinyMUD and had a fairly short lifespan, being quickly surpassed by its contemporaries. Though updated occasionally, it was largely a dead project with a small server population. The original v1.9f3 code was outdated and difficult to compile and run.
+
+The original TinyMUSE repository was created by [Belisarius Smith](https://www.belisariussmith.com/ "Belisarius Smith") for preservation and posterity, providing a compilable and working version with minor cleanup and improvements to meet modern C standards.
+
+### Original TinyMUSE Contributors
+
+- Jin (original author)
+
+### v1.0 - v1.8a4
+- Nils McCarthy (@shkoo, **nils@chezmoto.ai.mit.edu**)
+- Erk (@Erk, **erk@chezmoto.ai.mit.edu**)
+- Michael (@Bard **michael@chezmoto.ai.mit.edu**)
+
+### v1.8a4 - v1.9f3
+- Mark Eisenstat (@Morgoth **meisen@musenet.org**)
+- Jason Hula (@Power_Shaper)
+- Rick Harby (@Tabok **rharby@eznet.net**)
+- Robert Peperkamp (@Redone **rpeperkamp@envirolink.org**) 
+
+### v2.0
+- Belisarius Smith (@Balr)
+
+This project is a work of love, in appreciation for all the hours of fun from running (and playing) the original TinyMUSE server. To all those who wrote, maintained, and played, we thank you.
+
+**VibeMUSE respects and adheres to the original TinyMUSE attribution requirements.** See [COPYRIGHT.md](COPYRIGHT.md) for full details on the original licensing terms, which require proper attribution for academic and educational use.
 
 Original TinyMUSE base version: 2.0 
 
