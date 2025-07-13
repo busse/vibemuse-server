@@ -1,0 +1,47 @@
+{
+  "name": "vibemuse-server",
+  "version": "1.0.0",
+  "description": "VibeMUSE Server - Modern TinyMUSE implementation with RESTful APIs and real-time capabilities",
+  "main": "api/dist/index.js",
+  "scripts": {
+    "setup": "./scripts/setup-dev.sh",
+    "dev": "cd api && npm run dev",
+    "build": "cd api && npm run build",
+    "start": "cd api && npm start",
+    "test": "cd api && npm test",
+    "lint": "cd api && npm run lint",
+    "db:start": "./scripts/db-manager.sh start",
+    "db:stop": "./scripts/db-manager.sh stop",
+    "db:reset": "./scripts/db-manager.sh reset",
+    "db:migrate": "./scripts/db-manager.sh migrate",
+    "db:backup": "./scripts/db-manager.sh backup",
+    "db:status": "./scripts/db-manager.sh status",
+    "db:types": "./scripts/db-manager.sh generate-types"
+  },
+  "keywords": [
+    "vibemuse",
+    "tinymuse",
+    "muse",
+    "api",
+    "websocket",
+    "real-time",
+    "supabase",
+    "postgresql",
+    "typescript"
+  ],
+  "author": "VibeMUSE Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/busse/vibemuse-server.git"
+  },
+  "workspaces": [
+    "api"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}
