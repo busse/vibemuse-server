@@ -2,6 +2,7 @@
 
 # Demo script showing how create_issues.sh would work with GitHub authentication
 # This script simulates the GitHub CLI calls without actually creating issues
+# Updated to demonstrate the improved error handling messages
 
 set -e
 
