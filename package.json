@@ -16,7 +16,12 @@
     "db:migrate": "./scripts/db-manager.sh migrate",
     "db:backup": "./scripts/db-manager.sh backup",
     "db:status": "./scripts/db-manager.sh status",
-    "db:types": "./scripts/db-manager.sh generate-types"
+    "db:types": "./scripts/db-manager.sh generate-types",
+    "supabase:start": "supabase db start",
+    "supabase:stop": "supabase db stop",
+    "supabase:reset": "supabase db reset",
+    "supabase:types": "supabase gen types typescript --local > types/supabase.gen.ts",
+    "supabase:types:remote": "supabase gen types typescript > types/supabase.ts"
   },
   "keywords": [
     "vibemuse",
