@@ -50,20 +50,20 @@ char *bad_object_doomsday = "600";
 char *default_doomsday    = "600";
 
 // Database
-char *def_db_in  = "run/db/mdb";
-char *def_db_out = "run/db/mdb";
+char *def_db_in  = "legacy/run/db/mdb";
+char *def_db_out = "legacy/run/db/mdb";
 
 // Logfiles
-char *stdout_logfile       = "run/logs/out.log";
+char *stdout_logfile       = "legacy/run/logs/out.log";
 
-char *muse_pid_file        = "run/logs/muse_pid";
+char *muse_pid_file        = "legacy/run/logs/muse_pid";
  
-char *create_msg_file      = "run/msgs/create.txt";
-char *connect_msg_file     = "run/msgs/connect.txt";
-char *welcome_msg_file     = "run/msgs/welcome.txt";
-char *guest_msg_file       = "run/msgs/guest.txt";
-char *register_msg_file    = "run/msgs/register.txt";
-char *leave_msg_file       = "run/msgs/leave.txt";
+char *create_msg_file      = "legacy/run/msgs/create.txt";
+char *connect_msg_file     = "legacy/run/msgs/connect.txt";
+char *welcome_msg_file     = "legacy/run/msgs/welcome.txt";
+char *guest_msg_file       = "legacy/run/msgs/guest.txt";
+char *register_msg_file    = "legacy/run/msgs/register.txt";
+char *leave_msg_file       = "legacy/run/msgs/leave.txt";
 char *guest_lockout_file   = "run/lockouts/guest-lockout";
 char *welcome_lockout_file = "run/lockouts/welcome-lockout";
 

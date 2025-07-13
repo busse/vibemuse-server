@@ -237,9 +237,9 @@ int main(int argc, char *argv[])
 
         wait(0);
         execv(argv[0],argv);
-        execv("bin/tinymuse",argv);
+        execv("legacy/bin/tinymuse",argv);
         execvp("tinymuse", argv);
-        unlink("run/logs/socket_table");
+        unlink("legacy/run/logs/socket_table");
         save_muse_pid();
         _exit(exit_status);
     }
@@ -2094,8 +2094,8 @@ static void close_sockets()
 
     if (exit_status == TRUE)
     {
-        unlink("run/logs/socket_table");
-        x = fopen("run/logs/socket_table","w");
+        unlink("legacy/run/logs/socket_table");
+        x = fopen("legacy/run/logs/socket_table","w");
         fprintf(x,"%d\n",sock);
         fcntl(sock, F_SETFD, 0);
     }
@@ -2137,12 +2137,12 @@ static void open_sockets()
     FILE *x = NULL;
     char buf[BUF_SIZE];
 
-    if (!(x = fopen("run/logs/socket_table", "r")))
+    if (!(x = fopen("legacy/run/logs/socket_table", "r")))
     {
         return;
     }
 
-    unlink("run/logs/socket_table"); // so we don't try to use it again. 
+    unlink("legacy/run/logs/socket_table"); // so we don't try to use it again. 
     fgets(buf, BUF_SIZE, x);
     sock = atoi(buf);
     fcntl(sock, F_SETFD, 1);

@@ -3,22 +3,22 @@
 ## Server Text Files
 If you want to change anything in the 'help' or 'news' files, the format is self explanitory.
 
-Make sure you execute a 'make' in the [`run/msgs/`] directory after you change them.
+Make sure you execute a 'make' in the [`legacy/run/msgs/`] directory after you change them.
 
 A good idea would be to suggest using the 'gripe' command in connect.txt somewhere.
 
-Various files that should be in the [`run/msgs/`] directory:
+Various files that should be in the [`legacy/run/msgs/`] directory:
 
-- [`run/msgs/welcome.txt`]:  when someone connects to the port, but not to a char.
-- [`run/msgs/connect.txt`]:  when someone connects to a character
-- [`run/msgs/create.txt`]:   when someone creates a new character
-- [`run/msgs/register.txt`]: when someone tries to create a char, but WCREAT is in force.
+- [`legacy/run/msgs/welcome.txt`]:  when someone connects to the port, but not to a char.
+- [`legacy/run/msgs/connect.txt`]:  when someone connects to a character
+- [`legacy/run/msgs/create.txt`]:   when someone creates a new character
+- [`legacy/run/msgs/register.txt`]: when someone tries to create a char, but WCREAT is in force.
 
 <sup>Note that these are just blank if they don't exist. Server won't complain about it or anything.</sup>
 
 ## Server
 
-Run the server from the top level directory Ex: [`bin/tinymuse`] 
+Run the server from the repository root directory Ex: [`legacy/bin/tinymuse`] 
 
 ## God / Wizard Accounts
 

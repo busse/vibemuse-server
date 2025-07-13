@@ -11,13 +11,13 @@
 #include "log.h"
 
 struct log
-    important_log = { NULL, -1, "run/logs/important", "*log_imp"   },
-    sensitive_log = { NULL, -1, "run/logs/sensitive", "*log_sens"  },
-    error_log     = { NULL, -1, "run/logs/error",     "*log_err"   },
-    ioerr_log     = { NULL, -1, "run/logs/ioerr",     "*log_ioerr" },
-    io_log        = { NULL, -1, "run/logs/io",        "*log_io"    },
-    gripe_log     = { NULL, -1, "run/logs/gripe",     "*log_gripe" },
-    root_log      = { NULL, -1, "run/logs/root",      "*log_root"  }
+    important_log = { NULL, -1, "legacy/run/logs/important", "*log_imp"   },
+    sensitive_log = { NULL, -1, "legacy/run/logs/sensitive", "*log_sens"  },
+    error_log     = { NULL, -1, "legacy/run/logs/error",     "*log_err"   },
+    ioerr_log     = { NULL, -1, "legacy/run/logs/ioerr",     "*log_ioerr" },
+    io_log        = { NULL, -1, "legacy/run/logs/io",        "*log_io"    },
+    gripe_log     = { NULL, -1, "legacy/run/logs/gripe",     "*log_gripe" },
+    root_log      = { NULL, -1, "legacy/run/logs/root",      "*log_root"  }
 ;
 
 struct log *logs[] = {
