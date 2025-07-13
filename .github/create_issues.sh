@@ -2,6 +2,12 @@
 
 # GitHub Issues Creation Script for VibeMUSE
 # This script helps create all the GitHub Issues for the VibeMUSE modernization project
+# 
+# Improvements made:
+# - Enhanced authentication error handling with specific messages
+# - Better error reporting for milestone and label creation failures
+# - Improved issue creation error messages with helpful hints
+# - Support for both GitHub CLI authentication and GH_TOKEN environment variable
 
 set -e
 
@@ -74,10 +80,30 @@ if ! command -v gh &> /dev/null; then
     exit 1
 fi
 
-# Check if logged in to GitHub
-if ! gh auth status &> /dev/null; then
-    echo -e "${RED}Error: Not logged in to GitHub.${NC}"
-    echo "Please run: gh auth login"
+# Check if logged in to GitHub or if GH_TOKEN is set
+check_github_auth() {
+    if [ -n "$GH_TOKEN" ]; then
+        echo -e "${GREEN}✓ GitHub token found in environment${NC}"
+        return 0
+    elif gh auth status &> /dev/null; then
+        echo -e "${GREEN}✓ GitHub CLI authenticated${NC}"
+        return 0
+    else
+        echo -e "${RED}Error: GitHub authentication required.${NC}"
+        echo
+        echo "Choose one of these options:"
+        echo "1. For GitHub Actions: Set GH_TOKEN environment variable"
+        echo "   export GH_TOKEN=\${{ github.token }}"
+        echo "2. For local use: Login to GitHub CLI"
+        echo "   gh auth login"
+        echo "3. For local use with token: Set GH_TOKEN manually"
+        echo "   export GH_TOKEN=your_github_token"
+        echo
+        return 1
+    fi
+}
+
+if ! check_github_auth; then
     exit 1
 fi
 
@@ -99,14 +125,24 @@ create_milestone() {
     
     echo -e "${YELLOW}Creating milestone: $title${NC}"
     
-    if gh api repos/$REPO_OWNER/$REPO_NAME/milestones \
+    local output=""
+    local exit_code=0
+    
+    output=$(gh api repos/$REPO_OWNER/$REPO_NAME/milestones \
         --method POST \
         --field title="$title" \
         --field description="$description" \
-        --field due_on="$due_date" &> /dev/null; then
+        --field due_on="$due_date" 2>&1) || exit_code=$?
+    
+    if [ $exit_code -eq 0 ]; then
         echo -e "${GREEN}✓ Milestone created: $title${NC}"
     else
-        echo -e "${YELLOW}⚠ Milestone may already exist: $title${NC}"
+        if [[ "$output" == *"already_exists"* ]] || [[ "$output" == *"already exists"* ]]; then
+            echo -e "${YELLOW}⚠ Milestone already exists: $title${NC}"
+        else
+            echo -e "${RED}✗ Failed to create milestone: $title${NC}"
+            echo -e "${RED}  Error: $output${NC}"
+        fi
     fi
 }
 
@@ -116,14 +152,24 @@ create_label() {
     local color="$2"
     local description="$3"
     
-    if gh api repos/$REPO_OWNER/$REPO_NAME/labels \
+    local output=""
+    local exit_code=0
+    
+    output=$(gh api repos/$REPO_OWNER/$REPO_NAME/labels \
         --method POST \
         --field name="$name" \
         --field color="$color" \
-        --field description="$description" &> /dev/null; then
+        --field description="$description" 2>&1) || exit_code=$?
+    
+    if [ $exit_code -eq 0 ]; then
         echo -e "${GREEN}✓ Label created: $name${NC}"
     else
-        echo -e "${YELLOW}⚠ Label may already exist: $name${NC}"
+        if [[ "$output" == *"already_exists"* ]] || [[ "$output" == *"already exists"* ]]; then
+            echo -e "${YELLOW}⚠ Label already exists: $name${NC}"
+        else
+            echo -e "${RED}✗ Failed to create label: $name${NC}"
+            echo -e "${RED}  Error: $output${NC}"
+        fi
     fi
 }
 
@@ -150,28 +196,46 @@ create_issue() {
     fi
     
     # Create the issue with better error handling
-    local issue_url=""
+    local gh_output=""
+    local exit_code=0
+    
     if [ -n "$labels" ]; then
-        issue_url=$(gh issue create \
+        gh_output=$(gh issue create \
             --repo "$REPO_OWNER/$REPO_NAME" \
             --title "$title" \
             --body "$body" \
             --milestone "$milestone" \
-            --label "$labels" 2>&1 || echo "")
+            --label "$labels" 2>&1) || exit_code=$?
     else
-        issue_url=$(gh issue create \
+        gh_output=$(gh issue create \
             --repo "$REPO_OWNER/$REPO_NAME" \
             --title "$title" \
             --body "$body" \
-            --milestone "$milestone" 2>&1 || echo "")
+            --milestone "$milestone" 2>&1) || exit_code=$?
     fi
     
-    if [[ "$issue_url" == *"https://github.com/"* ]]; then
+    if [ $exit_code -eq 0 ] && [[ "$gh_output" == *"https://github.com/"* ]]; then
         echo -e "${GREEN}✓ Issue created: $title${NC}"
-        echo -e "${BLUE}  URL: $issue_url${NC}"
+        echo -e "${BLUE}  URL: $gh_output${NC}"
     else
         echo -e "${RED}✗ Failed to create issue: $title${NC}"
-        echo -e "${RED}  Error: $issue_url${NC}"
+        
+        # Provide specific error messages based on common failures
+        if [[ "$gh_output" == *"milestone not found"* ]]; then
+            echo -e "${RED}  Error: Milestone '$milestone' not found${NC}"
+            echo -e "${YELLOW}  Hint: Make sure milestones are created first${NC}"
+        elif [[ "$gh_output" == *"GH_TOKEN"* ]]; then
+            echo -e "${RED}  Error: GitHub authentication required${NC}"
+            echo -e "${YELLOW}  Hint: Set GH_TOKEN environment variable or run 'gh auth login'${NC}"
+        elif [[ "$gh_output" == *"not logged"* ]]; then
+            echo -e "${RED}  Error: Not logged in to GitHub${NC}"
+            echo -e "${YELLOW}  Hint: Run 'gh auth login' to authenticate${NC}"
+        elif [[ "$gh_output" == *"label"* ]] && [[ "$gh_output" == *"not found"* ]]; then
+            echo -e "${RED}  Error: One or more labels not found: $labels${NC}"
+            echo -e "${YELLOW}  Hint: Make sure labels are created first${NC}"
+        else
+            echo -e "${RED}  Error: $gh_output${NC}"
+        fi
     fi
 }
 
@@ -252,9 +316,14 @@ for issue_file in "${ISSUES[@]}"; do
     if [ -f "$issue_path" ]; then
         create_issue "$issue_path"
         echo
-        sleep 2  # Rate limiting
+        # Rate limiting to avoid hitting GitHub API limits
+        if [ ${#ISSUES[@]} -gt 5 ]; then
+            echo -e "${BLUE}Waiting 2 seconds to avoid rate limiting...${NC}"
+            sleep 2
+        fi
     else
         echo -e "${RED}✗ Issue template not found: $issue_file${NC}"
+        echo -e "${YELLOW}  Expected path: $issue_path${NC}"
     fi
 done
 
