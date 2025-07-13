@@ -69,6 +69,7 @@ Comprehensive documentation for the VibeMUSE modernization project:
 - **[Features](docs/features.md)** - Complete list of features being modernized
 - **[Modernization Opportunities](docs/potential-issues.md)** - Areas for improvement and modernization
 - **[API Documentation](docs/api/README.md)** - RESTful API specification and documentation
+- **[Supabase Setup Guide](docs/SUPABASE_SETUP.md)** - Comprehensive guide for setting up and configuring Supabase
 
 ## VibeMUSE Development Documentation
 
