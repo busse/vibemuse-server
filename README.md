@@ -1,14 +1,36 @@
-![TinyMUSE.png](https://belisariussmith.com/external/TinyMUSE.png "TinyMUSE.png")
+# VibeMUSE - Modern Multi-User Shared Environment
 
-# About TinyMUSE
+**VibeMUSE** is a modernization project that transforms the classic TinyMUSE server into a contemporary web-based platform with modern architecture, RESTful APIs, and real-time capabilities. This project preserves all original functionality while enabling modern web and mobile clients through a carefully structured technology stack.
 
-TinyMUSE was created after the MUD codebase explosion of 1990 and was based on version 1.5 of TinyMUSH (itself based on TinyMUD). It had a fairly short lifespan, and was quickly surpassed in both code quality and features by its contemporaries. Though it was updated occasionally, it was for the most part a dead project, and the TinyMUSE server population was accordingly small compared to other MUSHes. Because the code as of the last major update (v1.9f3) was still *so outdated*, it is difficult to compile, *much less run* a TinyMUSE server.
+## About VibeMUSE
 
-For the sake of preservation &amp; posterity, this repository has been created to provide a compilable and working version of TinyMUSE. There is no intent to add modern _mud_ functionality nor extensibility, but simply to provide a working, stripped down, stable server so that someone can see how the software originally acted. To that end, some minor cleanup (such as removing support for older database versions), and improvements have been made, such as updating to new standards (and libraries) in the C language (e.g. varargs &rarr; stdargs).
+VibeMUSE stands on the shoulders of the original TinyMUSE project, modernizing its rich feature set for today's web. The project follows a comprehensive 32-week development plan across 7 phases, transforming a 1990s C codebase into a modern web architecture while maintaining complete feature parity.
 
-This project is maintained by [Belisarius Smith](https://www.belisariussmith.com/ "Belisarius Smith").
+### Key Features
+- **Modern Architecture**: RESTful API with React/TypeScript frontend
+- **Real-time Communication**: WebSocket integration for instant updates  
+- **Database Modernization**: PostgreSQL with Supabase for scalability
+- **Preserved Functionality**: All 200+ original TinyMUSE features maintained
+- **Mobile Ready**: Modern responsive design for all devices
 
-## Attribution
+### Target Architecture
+- **Backend**: Node.js/Express with TypeScript
+- **Database**: Supabase (PostgreSQL) with real-time capabilities
+- **Frontend**: React/TypeScript with modern UI/UX
+- **Authentication**: JWT + session-based hybrid approach
+- **Real-time**: WebSocket for live communication
+
+## Original TinyMUSE Attribution
+
+VibeMUSE is built upon the foundation of TinyMUSE, created after the MUD codebase explosion of 1990 and based on version 1.5 of TinyMUSH. We honor and acknowledge the original work and contributors who made this project possible.
+
+### Original TinyMUSE History
+
+TinyMUSE was based on TinyMUD and had a fairly short lifespan, being quickly surpassed by its contemporaries. Though updated occasionally, it was largely a dead project with a small server population. The original v1.9f3 code was outdated and difficult to compile and run.
+
+The original TinyMUSE repository was created by [Belisarius Smith](https://www.belisariussmith.com/ "Belisarius Smith") for preservation and posterity, providing a compilable and working version with minor cleanup and improvements to meet modern C standards.
+
+### Original TinyMUSE Contributors
 
 - Jin (original author)
 
@@ -26,29 +48,31 @@ This project is maintained by [Belisarius Smith](https://www.belisariussmith.com
 ### v2.0
 - Belisarius Smith (@Balr)
 
-This project is a work of love, in appreciation for all the hours of fun from running (and playing) my first MUD server... to all those who wrote, maintained, and played, I thank you.
+This project is a work of love, in appreciation for all the hours of fun from running (and playing) the original TinyMUSE server. To all those who wrote, maintained, and played, we thank you.
 
-## 🚀 Modernization Project Status
+**VibeMUSE respects and adheres to the original TinyMUSE attribution requirements.** See [COPYRIGHT.md](COPYRIGHT.md) for full details on the original licensing terms, which require proper attribution for academic and educational use.
+
+## 🚀 VibeMUSE Development Status
 
 > **Current Phase**: 📋 **Planning & Documentation** (Complete)  
 > **Status**: Documentation phase complete, ready to begin Phase 1 development  
 > **Next Phase**: Phase 1 - Foundation & Database (Weeks 1-4)
 
-**📊 [View Full Project Tracker](docs/PROJECT_TRACKER.md)** - Track progress through all 7 development phases of the TinyMUSE modernization project.
+**📊 [View Full Project Tracker](docs/PROJECT_TRACKER.md)** - Track progress through all 7 development phases of the VibeMUSE modernization project.
 
-## Documentation
+## VibeMUSE Documentation
 
-Comprehensive documentation for the TinyMUSE codebase:
+Comprehensive documentation for the VibeMUSE modernization project:
 
-- **[Software Architecture](docs/software-architecture.md)** - Overview of system design and components
-- **[Server Architecture](docs/server-architecture.md)** - Technical implementation details  
-- **[Features](docs/features.md)** - Complete list of application features
+- **[Software Architecture](docs/software-architecture.md)** - Overview of original TinyMUSE system design and components
+- **[Server Architecture](docs/server-architecture.md)** - Technical implementation details of the original system
+- **[Features](docs/features.md)** - Complete list of features being modernized
 - **[Modernization Opportunities](docs/potential-issues.md)** - Areas for improvement and modernization
 - **[API Documentation](docs/api/README.md)** - RESTful API specification and documentation
 
-## Modernization Documentation
+## VibeMUSE Development Documentation
 
-Development plan for porting TinyMUSE to modern web architecture:
+Development plan and architecture for the VibeMUSE modernization:
 
 - **[📊 Project Tracker](docs/PROJECT_TRACKER.md)** - **Live progress tracking** through all 7 development phases with milestones and timelines
 - **[Development Plan](docs/DEVELOPMENT_PLAN.md)** - Comprehensive roadmap for modernization with tech stack progression
@@ -61,21 +85,25 @@ See [ADMIN.md](ADMIN.md)
 
 ## Version
 
-This is currently version 2.0 
+VibeMUSE is currently in **Phase 0: Documentation** (Complete).
 
-## Original Changelog (pre-git)
+Original TinyMUSE base version: 2.0 
 
-See [CHANGES.md](CHANGES.md)
+## Original TinyMUSE Changelog
+
+See [CHANGES.md](CHANGES.md) for the original TinyMUSE changelog (pre-git).
 
 ## Licensing
 
-This project and its original code is licensed under multiple custom copyright licenses. See [COPYRIGHT.md](COPYRIGHT.md)
+### Original TinyMUSE Code
+The original TinyMUSE code and its related materials are licensed under custom copyright licenses detailed in [COPYRIGHT.md](COPYRIGHT.md). The original code is primarily governed by academic guidelines for fair use, with attribution required for non-commercial purposes.
 
-Primarily, attribution is what is mostly required for non-commercial purposes.
-
-Any new code or separate code in version 2.0+ falls under the MIT license.
+### VibeMUSE Modernization Code
+Any new code developed for the VibeMUSE modernization project (version 2.0+) is licensed under the MIT license.
 
 ![MIT License](https://belisariussmith.com/external/mitlicense.png)
+
+**Important**: When using or contributing to VibeMUSE, you must respect both the original TinyMUSE attribution requirements and the MIT license for new code. See [COPYRIGHT.md](COPYRIGHT.md) for complete details on the original licensing terms.
 
 —
 
