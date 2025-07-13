@@ -11,12 +11,52 @@ gh auth login
 
 # Run the creation script
 ./create_issues.sh
+
+# For debug output
+DEBUG=true ./create_issues.sh
+
+# For help
+./create_issues.sh --help
 ```
 
-### Option 2: Manual Creation
+### Option 2: Test and Validate Templates
+```bash
+# Test that all templates parse correctly
+./test_parsing.sh
+
+# Demo the issue creation process
+./demo_create_issues.sh
+```
+
+### Option 3: Manual Creation
 1. Create milestones in GitHub for each phase
 2. Create labels using the label definitions below
 3. Create issues using the templates in this directory
+
+## Script Utilities
+
+This directory includes several utility scripts:
+
+- **`create_issues.sh`** - Main script for creating all GitHub issues, milestones, and labels
+- **`test_parsing.sh`** - Test script to verify all templates parse correctly
+- **`demo_create_issues.sh`** - Demo script showing the issue creation process
+
+### Script Features
+
+The `create_issues.sh` script has been enhanced with:
+- **Fixed labels parsing**: Properly handles YAML array format in templates
+- **Improved error handling**: Better error reporting and debugging
+- **Debug mode**: Set `DEBUG=true` for detailed output
+- **Help documentation**: Run with `--help` flag
+- **Progress reporting**: Colored output showing creation status
+
+### Troubleshooting
+
+If you encounter "Failed to create issue" errors:
+1. Ensure GitHub CLI is installed: `gh --version`
+2. Login to GitHub: `gh auth login`
+3. Run with debug mode: `DEBUG=true ./create_issues.sh`
+4. Test parsing first: `./test_parsing.sh`
 
 ## Project Overview
 

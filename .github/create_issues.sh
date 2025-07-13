@@ -5,6 +5,9 @@
 
 set -e
 
+# Debug mode flag
+DEBUG=${DEBUG:-false}
+
 # Configuration
 REPO_OWNER="busse"
 REPO_NAME="vibemuse-server"
@@ -45,6 +48,24 @@ portable_date_add() {
 echo -e "${BLUE}VibeMUSE GitHub Issues Creation Tool${NC}"
 echo -e "${BLUE}===================================${NC}"
 echo
+echo "Usage: $0 [OPTIONS]"
+echo "Options:"
+echo "  DEBUG=true    Enable debug output"
+echo "  -h, --help    Show this help message"
+echo
+echo "This script creates GitHub issues, milestones, and labels for the VibeMUSE project."
+echo "Make sure you are logged in to GitHub CLI with: gh auth login"
+echo
+
+# Handle help flag
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    echo "Examples:"
+    echo "  $0                    # Run the script normally"
+    echo "  DEBUG=true $0         # Run with debug output"
+    echo "  $0 --help            # Show this help"
+    echo
+    exit 0
+fi
 
 # Check if gh CLI is installed
 if ! command -v gh &> /dev/null; then
@@ -111,26 +132,46 @@ create_issue() {
     local template_file="$1"
     local title=$(grep "^title:" "$template_file" | sed 's/title: *//' | tr -d '"')
     local milestone=$(grep "^milestone:" "$template_file" | sed 's/milestone: *//' | tr -d '"')
-    local labels=$(grep "^labels:" "$template_file" | sed 's/labels: *//' | tr -d '[]"' | tr ',' '\n' | tr -d ' ')
+    # Parse labels from YAML array format and convert to comma-separated string
+    local labels=$(grep "^labels:" "$template_file" | sed 's/labels: *//' | tr -d '[]"' | sed 's/, */,/g' | tr -d ' ')
     
     # Extract body (everything after the front matter)
     local body=$(sed -n '/^---$/,/^---$/d; p' "$template_file")
     
     echo -e "${YELLOW}Creating issue: $title${NC}"
     
-    # Create the issue
-    local issue_url=$(gh issue create \
-        --repo "$REPO_OWNER/$REPO_NAME" \
-        --title "$title" \
-        --body "$body" \
-        --milestone "$milestone" \
-        --label "$labels" 2>/dev/null || echo "")
+    # Debug output
+    if [ "$DEBUG" = "true" ]; then
+        echo -e "${BLUE}  Template: $template_file${NC}"
+        echo -e "${BLUE}  Title: $title${NC}"
+        echo -e "${BLUE}  Milestone: $milestone${NC}"
+        echo -e "${BLUE}  Labels: $labels${NC}"
+        echo -e "${BLUE}  Body length: $(echo "$body" | wc -c) characters${NC}"
+    fi
     
-    if [ -n "$issue_url" ]; then
+    # Create the issue with better error handling
+    local issue_url=""
+    if [ -n "$labels" ]; then
+        issue_url=$(gh issue create \
+            --repo "$REPO_OWNER/$REPO_NAME" \
+            --title "$title" \
+            --body "$body" \
+            --milestone "$milestone" \
+            --label "$labels" 2>&1 || echo "")
+    else
+        issue_url=$(gh issue create \
+            --repo "$REPO_OWNER/$REPO_NAME" \
+            --title "$title" \
+            --body "$body" \
+            --milestone "$milestone" 2>&1 || echo "")
+    fi
+    
+    if [[ "$issue_url" == *"https://github.com/"* ]]; then
         echo -e "${GREEN}✓ Issue created: $title${NC}"
         echo -e "${BLUE}  URL: $issue_url${NC}"
     else
         echo -e "${RED}✗ Failed to create issue: $title${NC}"
+        echo -e "${RED}  Error: $issue_url${NC}"
     fi
 }
 
