@@ -24,23 +24,69 @@ VibeMUSE chose Supabase for several key reasons:
 1. **Real-time Communication**: Essential for MUD-style real-time interactions
 2. **PostgreSQL**: Mature, powerful relational database perfect for complex game data
 3. **Row Level Security**: Granular security controls for multi-user environments
-4. **Developer Experience**: Excellent tooling and local development support
+4. **Developer Experience**: Excellent tooling and cloud development support
 5. **Scalability**: Handles growth from development to production
 6. **Open Source**: Can be self-hosted and customized as needed
+7. **Cloud-First**: Seamless integration with cloud-based development tools like Lovable
 
 ## Prerequisites
 
 Before starting, ensure you have:
 
 - **Node.js** 18+ and npm
-- **Docker** and Docker Compose (for local development)
+- **Supabase Account** (free tier available at [supabase.com](https://supabase.com))
 - **Git** (for version control)
 - **Basic SQL knowledge** (CREATE TABLE, SELECT, INSERT, etc.)
 - **Understanding of relational databases** (primary keys, foreign keys, indexes)
 
-## Part 1: Local Development Setup
+> **Note**: This guide uses cloud-based Supabase instances for both development and production. This approach is required for VibeMUSE as the main client application will be developed using Lovable, which only supports hosted Supabase cloud services.
 
-### 1.1 Install Supabase CLI
+## Part 1: Cloud Development Setup
+
+### 1.1 Create Supabase Projects
+
+VibeMUSE uses separate Supabase projects for development and production environments. This approach allows for safe testing and development without affecting the production database.
+
+#### Create Development Project
+
+1. **Sign up/Login to Supabase**
+   - Go to [supabase.com](https://supabase.com)
+   - Create an account or log in
+   - Access your dashboard
+
+2. **Create Development Project**
+   ```bash
+   # Project details
+   Name: vibemuse-dev
+   Database Password: [secure password]
+   Region: [choose closest to your location]
+   Plan: Free (sufficient for development)
+   ```
+
+3. **Note Project Details**
+   - Project URL: `https://your-project-id.supabase.co`
+   - API Keys: Available in Settings > API
+   - Database URL: Available in Settings > Database
+
+#### Create Production Project
+
+1. **Create Production Project**
+   ```bash
+   # Project details
+   Name: vibemuse-prod
+   Database Password: [secure password]
+   Region: [choose closest to your users]
+   Plan: Pro (recommended for production)
+   ```
+
+2. **Configure Production Settings**
+   - Enable database backups
+   - Set up custom domain (optional)
+   - Configure SSL certificates
+
+### 1.2 Install Supabase CLI
+
+The Supabase CLI is essential for managing migrations and syncing between projects:
 
 ```bash
 # Install Supabase CLI globally
@@ -50,50 +96,36 @@ npm install -g supabase
 supabase --version
 ```
 
-### 1.2 Initialize Local Supabase
+### 1.3 Link Projects to CLI
 
-The VibeMUSE project already has Supabase configured, but here's how it was set up:
+Link your local development to the cloud projects:
 
 ```bash
 # Navigate to project root
 cd /path/to/vibemuse-server
 
-# Initialize Supabase (already done in this project)
-supabase init
+# Link to development project
+supabase link --project-ref your-dev-project-id
+# Follow the prompts to authenticate and link
 
-# Start local Supabase services
-supabase start
+# You can switch between projects using:
+supabase link --project-ref your-prod-project-id
 ```
-
-### 1.3 Understanding the Local Environment
-
-When you run `supabase start`, it creates a local development environment with:
-
-- **Database**: PostgreSQL 17 running on `localhost:54322`
-- **API Server**: REST API on `localhost:54321`
-- **Studio**: Web interface on `localhost:54323`
-- **Auth**: Authentication service
-- **Storage**: File storage service
-- **Email**: Email testing service on `localhost:54324`
 
 ### 1.4 Environment Configuration
 
-Copy the environment template:
+Create environment files for both development and production:
 
-```bash
-cp .env.example .env.local
-```
-
-Configure the local environment variables:
+#### Development Environment (.env.local)
 
 ```env
-# Supabase Configuration
-SUPABASE_URL=http://127.0.0.1:54321
-SUPABASE_ANON_KEY=your-anon-key-here
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+# Supabase Development Configuration
+SUPABASE_URL=https://your-dev-project-id.supabase.co
+SUPABASE_ANON_KEY=your-dev-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-dev-service-role-key-here
 
 # Database Configuration
-DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+DATABASE_URL=postgresql://postgres:[password]@db.your-dev-project-id.supabase.co:5432/postgres
 
 # Application Configuration
 JWT_SECRET=your-super-secret-jwt-key-here
@@ -101,7 +133,38 @@ NODE_ENV=development
 PORT=3000
 ```
 
-**Important**: The `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are displayed in the terminal when you run `supabase start`.
+#### Production Environment (.env.production)
+
+```env
+# Supabase Production Configuration
+SUPABASE_URL=https://your-prod-project-id.supabase.co
+SUPABASE_ANON_KEY=your-prod-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-prod-service-role-key-here
+
+# Database Configuration
+DATABASE_URL=postgresql://postgres:[password]@db.your-prod-project-id.supabase.co:5432/postgres
+
+# Application Configuration
+JWT_SECRET=your-super-secret-jwt-key-here
+NODE_ENV=production
+PORT=3000
+```
+
+### 1.5 Finding Your Project Credentials
+
+To get your project credentials:
+
+1. **Go to your Supabase project dashboard**
+2. **Navigate to Settings > API**
+3. **Copy the following values:**
+   - Project URL → `SUPABASE_URL`
+   - `anon` `public` key → `SUPABASE_ANON_KEY`
+   - `service_role` `secret` key → `SUPABASE_SERVICE_ROLE_KEY`
+
+4. **For Database URL:**
+   - Go to Settings > Database
+   - Copy the connection string
+   - Replace `[YOUR-PASSWORD]` with your actual database password
 
 ## Part 2: Database Schema and Migrations
 
@@ -126,20 +189,24 @@ channel_subscriptions   -- User channel memberships
 
 ### 2.2 Migration System
 
-Supabase uses a migration-based approach to manage database schema changes:
+Supabase uses a migration-based approach to manage database schema changes. With cloud instances, you'll push migrations to your development project first, then to production:
 
 ```bash
+# Ensure you're linked to your development project
+supabase link --project-ref your-dev-project-id
+
 # View current migration status
-supabase db status
+supabase db remote status
 
 # Create a new migration
 supabase migration create "add_new_feature"
 
-# Apply migrations
+# Apply migrations to development
 supabase db push
 
-# Reset database (useful for development)
-supabase db reset
+# Switch to production and apply migrations
+supabase link --project-ref your-prod-project-id
+supabase db push
 ```
 
 ### 2.3 Working with Migrations
@@ -158,7 +225,8 @@ This creates a file like `supabase/migrations/20240101000000_add_user_preference
 1. **Incremental Changes**: Each migration should contain one logical change
 2. **Rollback Considerations**: Write migrations that can be easily reversed
 3. **Data Migrations**: Include data transformations if needed
-4. **Testing**: Always test migrations on development data first
+4. **Testing**: Always test migrations on development project first
+5. **Environment Order**: Apply to development first, then production
 
 **Example Migration:**
 
@@ -183,24 +251,83 @@ ON user_preferences FOR ALL
 USING (auth.uid() = user_id);
 ```
 
-### 2.4 Database Management Scripts
-
-VibeMUSE provides convenient database management scripts:
+**Cloud Migration Workflow:**
 
 ```bash
-# Start Supabase services
-./scripts/db-manager.sh start
+# 1. Create migration
+supabase migration create "add_user_preferences"
 
-# Stop Supabase services
-./scripts/db-manager.sh stop
+# 2. Edit the migration file with your SQL
 
-# Apply migrations
+# 3. Apply to development project
+supabase link --project-ref your-dev-project-id
+supabase db push
+
+# 4. Test in development environment
+
+# 5. Apply to production project
+supabase link --project-ref your-prod-project-id
+supabase db push
+```
+
+### 2.4 Database Management with Cloud Instances
+
+Working with cloud instances requires a different approach than local development:
+
+**Development Environment Management:**
+
+```bash
+# Switch to development project
+supabase link --project-ref your-dev-project-id
+
+# Check current schema status
+supabase db remote status
+
+# Apply migrations to development
+supabase db push
+
+# Generate TypeScript types from development
+supabase gen types typescript > types/supabase.ts
+
+# Create a backup of development data
+supabase db dump > backups/dev-backup-$(date +%Y%m%d-%H%M%S).sql
+```
+
+**Production Environment Management:**
+
+```bash
+# Switch to production project
+supabase link --project-ref your-prod-project-id
+
+# Check current schema status
+supabase db remote status
+
+# Apply migrations to production
+supabase db push
+
+# Generate TypeScript types from production
+supabase gen types typescript > types/supabase-prod.ts
+
+# Create a backup of production data
+supabase db dump > backups/prod-backup-$(date +%Y%m%d-%H%M%S).sql
+```
+
+**Database Management Scripts:**
+
+VibeMUSE provides convenient database management scripts that work with cloud instances:
+
+```bash
+# Switch to development environment
+./scripts/db-manager.sh dev
+
+# Switch to production environment
+./scripts/db-manager.sh prod
+
+# Apply migrations to current environment
 ./scripts/db-manager.sh migrate
 
-# Reset database to initial state
-./scripts/db-manager.sh reset
-
-# Create a backup
+# Create backup of current environment
+./scripts/db-manager.sh backup
 ./scripts/db-manager.sh backup
 
 # Generate TypeScript types
@@ -258,7 +385,7 @@ In `supabase/config.toml`:
 ```toml
 [auth]
 enabled = true
-site_url = "http://127.0.0.1:3000"
+site_url = "https://your-domain.com"  # or http://localhost:3000 for local testing
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
 enable_signup = true
@@ -377,26 +504,31 @@ const presenceSubscription = supabase
 
 ## Part 5: Production Deployment
 
-### 5.1 Supabase Cloud Setup
+### 5.1 Production Environment Management
 
-**Create a Supabase Project:**
+Since VibeMUSE uses cloud instances for both development and production, deployment becomes a matter of managing separate projects rather than migrating from local to cloud.
+
+**Production Project Setup:**
+
+Your production project should already be created from Part 1. If not:
 
 1. Go to [supabase.com](https://supabase.com)
-2. Sign up/Login
-3. Create a new project
-4. Choose a region close to your users
-5. Set a strong database password
+2. Create a new project named `vibemuse-prod`
+3. Choose a region close to your users
+4. Set a strong database password
+5. Enable database backups
+6. Configure custom domain (optional)
 
-**Configure Environment Variables:**
+**Production Environment Variables:**
 
 ```env
 # Production Supabase Configuration
-SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_URL=https://your-prod-project-id.supabase.co
 SUPABASE_ANON_KEY=your-production-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-production-service-role-key
 
 # Production Database
-DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres
+DATABASE_URL=postgresql://postgres:[PASSWORD]@db.your-prod-project-id.supabase.co:5432/postgres
 
 # Production Settings
 NODE_ENV=production
@@ -405,17 +537,37 @@ JWT_SECRET=your-production-jwt-secret
 
 ### 5.2 Deployment Process
 
-**Link Local Project to Production:**
+**Schema Deployment:**
 
 ```bash
-# Link to your production project
-supabase link --project-ref your-project-ref
+# Switch to production project
+supabase link --project-ref your-prod-project-id
 
-# Push schema to production
+# Check current migration status
+supabase db remote status
+
+# Apply migrations to production
 supabase db push
+
+# Generate production TypeScript types
+supabase gen types typescript > types/supabase-prod.ts
 
 # Deploy any edge functions
 supabase functions deploy
+```
+
+**Environment-Specific Deployment:**
+
+```bash
+# Development testing
+supabase link --project-ref your-dev-project-id
+npm run test
+
+# Production deployment
+supabase link --project-ref your-prod-project-id
+supabase db push
+npm run build:production
+# Deploy to your hosting platform
 ```
 
 ### 5.3 Production Configuration
@@ -445,17 +597,23 @@ ALTER TABLE virtual_objects ENABLE ROW LEVEL SECURITY;
 - Use Supabase Dashboard for real-time metrics
 - Monitor connection counts and query performance
 - Set up alerts for high resource usage
+- Compare metrics between dev and prod environments
 
 **Backup Strategy:**
 
 ```bash
-# Automated backups (configured in Supabase Dashboard)
-# Manual backup
-supabase db dump --local > backup.sql
+# Create production backup
+supabase link --project-ref your-prod-project-id
+supabase db dump > backups/prod-backup-$(date +%Y%m%d-%H%M%S).sql
 
-# Restore from backup
-supabase db reset --local
-psql -h localhost -p 54322 -U postgres -d postgres < backup.sql
+# Create development backup
+supabase link --project-ref your-dev-project-id
+supabase db dump > backups/dev-backup-$(date +%Y%m%d-%H%M%S).sql
+
+# Restore from backup to development environment
+# Note: This restores to your cloud development instance
+supabase db reset --linked-project your-dev-project-id
+psql "postgresql://postgres:[password]@db.your-dev-project-id.supabase.co:5432/postgres" < backup.sql
 ```
 
 ## Part 6: Development Workflow
@@ -465,10 +623,11 @@ psql -h localhost -p 54322 -U postgres -d postgres < backup.sql
 **Starting Development:**
 
 ```bash
-# 1. Start local Supabase
-supabase start
+# 1. Ensure you're linked to your development project
+supabase link --project-ref your-dev-project-id
 
-# 2. Apply any new migrations
+# 2. Check and apply any new migrations
+supabase db remote status
 supabase db push
 
 # 3. Start the API server
@@ -484,14 +643,14 @@ supabase migration create "your_change_description"
 # 2. Edit the migration file
 # Add your SQL changes to the generated file
 
-# 3. Apply the migration locally
+# 3. Apply the migration to development
 supabase db push
 
 # 4. Test your changes
 # Run your application and verify the changes work
 
 # 5. Generate updated TypeScript types
-supabase gen types typescript --local > types/supabase.ts
+supabase gen types typescript > types/supabase.ts
 ```
 
 **Committing Changes:**
@@ -507,13 +666,33 @@ git add types/supabase.ts
 git commit -m "Add new feature: description"
 ```
 
+**Deploying to Production:**
+
+```bash
+# 1. Switch to production project
+supabase link --project-ref your-prod-project-id
+
+# 2. Apply migrations to production
+supabase db push
+
+# 3. Generate production TypeScript types
+supabase gen types typescript > types/supabase-prod.ts
+
+# 4. Deploy your application code
+# (Deploy to your hosting platform)
+```
+
 ### 6.2 TypeScript Integration
 
 **Generate Types:**
 
 ```bash
-# Generate TypeScript types from your database schema
-supabase gen types typescript --local > types/supabase.ts
+# Generate TypeScript types from your development database
+supabase gen types typescript > types/supabase.ts
+
+# Generate TypeScript types from your production database
+supabase link --project-ref your-prod-project-id
+supabase gen types typescript > types/supabase-prod.ts
 ```
 
 **Use Types in Your Code:**
@@ -572,43 +751,45 @@ const testRealtime = async () => {
 **Supabase Won't Start:**
 
 ```bash
-# Check if Docker is running
-docker ps
+**Connection Issues:**
 
-# Check if ports are available
-lsof -i :54321
-lsof -i :54322
-lsof -i :54323
+```bash
+# Check if you're linked to the correct project
+supabase projects list
+supabase link --project-ref your-project-id
 
-# Reset Supabase
-supabase stop
-supabase start
+# Test connection to your cloud instance
+curl -H "apikey: your-anon-key" "https://your-project-id.supabase.co/rest/v1/"
+
+# Check project status
+supabase db remote status
 ```
 
 **Database Connection Issues:**
 
 ```bash
-# Check database status
-supabase db status
+# Check remote database status
+supabase db remote status
 
-# Check if database is responsive
-psql -h localhost -p 54322 -U postgres -d postgres -c "SELECT 1"
+# Test database connectivity
+psql "postgresql://postgres:[password]@db.your-project-id.supabase.co:5432/postgres" -c "SELECT 1"
 
 # Check migration status
-supabase db status
+supabase db remote status
 ```
 
 **Authentication Issues:**
 
 ```bash
-# Check auth configuration
-supabase status
+# Check project configuration
+supabase projects list
 
-# Verify JWT secret
-echo $JWT_SECRET
+# Verify environment variables
+echo $SUPABASE_URL
+echo $SUPABASE_ANON_KEY
 
-# Check user table
-psql -h localhost -p 54322 -U postgres -d postgres -c "SELECT * FROM auth.users"
+# Check auth configuration in Supabase Dashboard
+# Go to Authentication > Settings
 ```
 
 ### 7.2 Performance Issues
@@ -649,16 +830,29 @@ const subscription = supabase
 
 ```bash
 # Check migration status
-supabase db status
+supabase db remote status
 
-# Rollback last migration (if needed)
-supabase db reset
-
-# Apply migrations one by one
+# If migration failed, check the error logs
 supabase db push --debug
+
+# For development, you can recreate the project if needed
+# (Only for development environment, never production)
 ```
 
 **Schema Conflicts:**
+
+```bash
+# Check differences between local and remote
+supabase db diff
+
+# Check migration history
+supabase db remote status
+
+# If needed, reset development environment
+# (Only for development, never production)
+supabase link --project-ref your-dev-project-id
+# Manually fix conflicts via Supabase Dashboard
+```
 
 ```sql
 -- Check for conflicts
@@ -896,21 +1090,29 @@ const validateMessage = (req, res, next) => {
 
 ### 10.4 Development Tools
 
-- **Supabase Studio**: http://localhost:54323 (local development)
+- **Supabase Studio**: Access via your project dashboard at https://your-project-id.supabase.co
 - **pgAdmin**: PostgreSQL administration tool
 - **PostgREST**: Auto-generated REST API
 - **Realtime**: WebSocket subscriptions
 
 ## Conclusion
 
-This guide provides a comprehensive foundation for working with Supabase in the VibeMUSE project. As you become more comfortable with these concepts, you'll be able to leverage Supabase's full power to build scalable, real-time applications.
+This guide provides a comprehensive foundation for working with Supabase in the VibeMUSE project using cloud-based development and production environments. This cloud-first approach ensures compatibility with tools like Lovable while maintaining a professional development workflow.
 
 Remember to:
-- Start with local development
+- Use separate cloud instances for development and production
 - Use migrations for all schema changes
+- Test changes in development before applying to production
 - Implement proper Row Level Security
 - Test real-time features thoroughly
 - Follow security best practices
-- Monitor performance in production
+- Monitor performance in both environments
+
+The cloud-based approach provides several advantages:
+- **Consistency**: Same environment for development and production
+- **Collaboration**: Easy sharing of development environments
+- **Tool Compatibility**: Works with cloud-based development tools
+- **Scalability**: Easy to scale both development and production
+- **Monitoring**: Built-in monitoring and analytics
 
 For project-specific questions or issues, refer to the main VibeMUSE documentation or create an issue in the project repository.
