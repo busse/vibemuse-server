@@ -1,10 +1,11 @@
-name: CI/CD Pipeline
-
+name: Legacy CI/CD Pipeline
+# This workflow is kept for reference and runs on develop branch
+# Main branch CI/CD now handled by ci.yml and release.yml workflows
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ develop ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ develop ]
 
 jobs:
   build:

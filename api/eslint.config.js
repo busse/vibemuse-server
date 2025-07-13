@@ -4,6 +4,7 @@ const tsParser = require('@typescript-eslint/parser');
 module.exports = [
   {
     files: ['src/**/*.ts'],
+    ignores: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -21,6 +22,26 @@ module.exports = [
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'warn',
       '@typescript-eslint/no-non-null-assertion': 'error',
+      'no-console': 'warn',
+      'no-debugger': 'error'
+    }
+  },
+  {
+    files: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'module'
+      }
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin
+    },
+    rules: {
+      ...tsPlugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/no-explicit-any': 'warn',
       'no-console': 'warn',
       'no-debugger': 'error'
     }

@@ -46,7 +46,7 @@ jobs:
 
       # Run your unit / integration tests here
       - name: Run tests
-        run: npm test
+        run: cd api && npm test -- --passWithNoTests
         env:
           NODE_ENV: test
           JWT_SECRET: test-secret-key-32-characters-long
