@@ -79,9 +79,28 @@ Development plan and architecture for the VibeMUSE modernization:
 - **[Modernization Architecture](docs/MODERNIZATION_ARCHITECTURE.md)** - Technical architecture design for modern web stack
 - **[Implementation Guide](docs/IMPLEMENTATION_GUIDE.md)** - Practical step-by-step implementation instructions
 
+## Repository Structure
+
+This repository is organized to clearly separate the legacy TinyMUSE reference code from the modern VibeMUSE development project:
+
+### VibeMUSE Modernization (Root Level)
+- **`docs/`** - VibeMUSE modernization documentation and architecture
+- **`.github/`** - GitHub issues and project management for development phases
+- **`README.md`** - This file, describing the VibeMUSE modernization project
+
+### Legacy TinyMUSE Reference (`legacy/`)
+- **`legacy/src/`** - Original TinyMUSE C source code (v2.0)
+- **`legacy/bin/`** - Compiled binaries directory
+- **`legacy/run/`** - Runtime files and configuration
+- **`legacy/ADMIN.md`** - Original TinyMUSE administration guide
+- **`legacy/CHANGES.md`** - Original TinyMUSE changelog
+- **`legacy/DATABASE.md`** - Original TinyMUSE database format documentation
+
+The legacy directory contains the original TinyMUSE code preserved as reference documentation for the modernization project.
+
 ## Server Administration
 
-See [ADMIN.md](ADMIN.md)
+See [legacy/ADMIN.md](legacy/ADMIN.md)
 
 ## Version
 
@@ -91,7 +110,7 @@ Original TinyMUSE base version: 2.0
 
 ## Original TinyMUSE Changelog
 
-See [CHANGES.md](CHANGES.md) for the original TinyMUSE changelog (pre-git).
+See [legacy/CHANGES.md](legacy/CHANGES.md) for the original TinyMUSE changelog (pre-git).
 
 ## Licensing
 

@@ -712,7 +712,7 @@ void process_command(dbref player, char *command, dbref cause)
 
         if (command_log == NULL)
         {
-            command_log = fopen("run/logs/commands", "w");
+            command_log = fopen("legacy/run/logs/commands", "w");
             setbuf(command_log, NULL);
         }
 
@@ -747,8 +747,8 @@ void process_command(dbref player, char *command, dbref cause)
             }
 
             command_log = NULL;
-            unlink("run/logs/commands~");
-            rename("run/logs/commands", "run/logs/commands~");
+            unlink("legacy/run/logs/commands~");
+            rename("legacy/run/logs/commands", "legacy/run/logs/commands~");
         }
     }
 

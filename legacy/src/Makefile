@@ -1,7 +1,7 @@
 CC =  gcc
 WARNINGS = -Wall
 CFLAGS = $(WARNINGS) -g -fpcc-struct-return -Wpointer-arith
-TOPDIR = ../
+TOPDIR = ../../
 LIBS = -L/usr/local/lib 
 COMM = comm.o comm.admin.o comm.create.o comm.dbtop.o comm.help.o comm.info.o comm.look.o comm.pcmds.o comm.player.o comm.rob.o comm.set.o comm.speech.o
 DB = db.o db.boolexp.o db.destroy.o db.inherit.o db.mail.o db.warnings.o
