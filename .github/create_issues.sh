@@ -8,7 +8,7 @@ set -e
 # Configuration
 REPO_OWNER="busse"
 REPO_NAME="vibemuse-server"
-ISSUES_DIR="/tmp/github-issues"
+ISSUES_DIR="$(dirname "$0")"
 
 # Colors for output
 RED='\033[0;31m'
