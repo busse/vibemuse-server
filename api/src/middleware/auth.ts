@@ -11,11 +11,10 @@ export interface AuthenticatedUser {
   permissions: string[];
 }
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: AuthenticatedUser;
-    }
+// Extend Express Request type
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: AuthenticatedUser;
   }
 }
 
