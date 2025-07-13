@@ -76,8 +76,7 @@ Thumbs.db
 .temp
 .temp/
 
-# Database dumps
-*.sql
+# Database dumps (but keep seed files)
 *.dump
 backups/*.sql
 
