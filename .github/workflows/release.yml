@@ -22,21 +22,36 @@ jobs:
           version: latest
 
       # Point the CLI at your cloud project
-      - name: Validate Supabase Project ID
+      - name: Validate and Extract Supabase Project ID
         run: |
           if [ -z "$SUPABASE_PROJECT_ID" ]; then
             echo "Error: SUPABASE_PROJECT_ID environment variable is not set"
             exit 1
           fi
-          if [ ${#SUPABASE_PROJECT_ID} -ne 20 ]; then
-            echo "Error: SUPABASE_PROJECT_ID must be exactly 20 characters long"
-            echo "Current length: ${#SUPABASE_PROJECT_ID}"
+          
+          # Extract project ID from URL format if needed
+          if [[ "$SUPABASE_PROJECT_ID" =~ ^https?://([^.]+)\.supabase\.co ]]; then
+            EXTRACTED_PROJECT_ID="${BASH_REMATCH[1]}"
+            echo "Extracted project ID from URL: $EXTRACTED_PROJECT_ID"
+            echo "SUPABASE_PROJECT_REF=$EXTRACTED_PROJECT_ID" >> $GITHUB_ENV
+          else
+            # Use the value as-is if it's not a URL
+            echo "Using project ID as-is: $SUPABASE_PROJECT_ID"
+            echo "SUPABASE_PROJECT_REF=$SUPABASE_PROJECT_ID" >> $GITHUB_ENV
+          fi
+          
+          # Validate the final project ID format
+          if [ ${#SUPABASE_PROJECT_REF} -lt 8 ] || [ ${#SUPABASE_PROJECT_REF} -gt 30 ]; then
+            echo "Error: Project ID must be between 8 and 30 characters long"
+            echo "Current length: ${#SUPABASE_PROJECT_REF}"
+            echo "Current value: $SUPABASE_PROJECT_REF"
             exit 1
           fi
-          echo "SUPABASE_PROJECT_ID format validation passed"
+          
+          echo "SUPABASE_PROJECT_ID validation passed"
 
       - name: Link to Supabase project
-        run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
 
       # Ship every migration in supabase/migrations
       - name: Push database migrations
