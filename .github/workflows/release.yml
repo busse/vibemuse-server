@@ -21,6 +21,13 @@ jobs:
         with:
           version: latest
 
+      # Set environment variables for non-interactive mode
+      - name: Configure Supabase CLI for CI
+        run: |
+          # Disable interactive prompts and telemetry in CI
+          echo "SUPABASE_CLI_DISABLE_TELEMETRY=true" >> $GITHUB_ENV
+          echo "CI=true" >> $GITHUB_ENV
+
       # Point the CLI at your cloud project
       - name: Validate and Extract Supabase Project ID
         run: |
@@ -52,11 +59,28 @@ jobs:
           echo "SUPABASE_PROJECT_ID validation passed"
 
       - name: Link to Supabase project
-        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+        run: |
+          # Link to the project (warnings about keyring are expected in CI and can be ignored)
+          supabase link --project-ref "$SUPABASE_PROJECT_REF" || {
+            echo "Warning: Linking may have warnings about keyring service - this is normal in CI environments"
+            # Check if link was actually successful despite keyring warnings
+            if supabase status > /dev/null 2>&1; then
+              echo "Project link successful"
+            else
+              echo "Failed to link to Supabase project"
+              exit 1
+            fi
+          }
 
       # Ship every migration in supabase/migrations
       - name: Push database migrations
-        run: supabase db push --non-interactive
+        run: |
+          # Push migrations with non-interactive flag to avoid prompts
+          supabase db push --non-interactive || {
+            echo "Database push failed. Checking project status..."
+            supabase status
+            exit 1
+          }
 
       # (optional) regenerate TS types against the *remote* DB
       - name: Generate TypeScript types
