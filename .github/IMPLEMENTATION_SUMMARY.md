@@ -61,7 +61,7 @@ The following secrets must be configured in the repository:
 
 | Secret | Purpose | Required For |
 |--------|---------|-------------|
-| `SUPABASE_PROJECT_ID` | 8-char project reference | Release workflow |
+| `SUPABASE_PROJECT_ID` | Project reference (8-30 chars) or URL | Release workflow |
 | `SUPABASE_DB_PASSWORD` | Database password | Release workflow |
 | `SUPABASE_ACCESS_TOKEN` | Personal access token | Release workflow |
 | `SUPABASE_ANON_KEY` | Anonymous key (optional) | Enhanced testing |
