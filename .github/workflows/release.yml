@@ -56,7 +56,7 @@ jobs:
 
       # Ship every migration in supabase/migrations
       - name: Push database migrations
-        run: supabase db push --no-confirm
+        run: supabase db push --non-interactive
 
       # (optional) regenerate TS types against the *remote* DB
       - name: Generate TypeScript types
