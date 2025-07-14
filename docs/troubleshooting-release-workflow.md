@@ -18,7 +18,7 @@ The error occurs when the `SUPABASE_PROJECT_ID` environment variable is not prop
 
 ### Required Configuration
 The `SUPABASE_PROJECT_ID` secret must be set in the GitHub repository secrets with:
-- Either a project reference ID (8-30 characters, alphanumeric)
+- Either a project reference ID (exactly 20 characters, alphanumeric)
 - Or a full Supabase project URL (e.g., `https://abcdefghijklmnopqrst.supabase.co`)
 - The workflow will automatically extract the project ID from URLs
 
@@ -26,7 +26,7 @@ The `SUPABASE_PROJECT_ID` secret must be set in the GitHub repository secrets wi
 The workflow now includes validation that checks:
 - The environment variable is not empty
 - Automatically extracts project ID from URLs if needed
-- Validates the final project ID is between 8-30 characters long
+- Validates the final project ID is exactly 20 characters long
 - Provides clear error messages if validation fails
 
 ### Testing
@@ -55,8 +55,8 @@ else
 fi
 
 # Validate the final project ID format
-if [ ${#SUPABASE_PROJECT_REF} -lt 8 ] || [ ${#SUPABASE_PROJECT_REF} -gt 30 ]; then
-  echo "Error: Project ID must be between 8 and 30 characters long"
+if [ ${#SUPABASE_PROJECT_REF} -ne 20 ]; then
+  echo "Error: Project ID must be exactly 20 characters long"
   echo "Current length: ${#SUPABASE_PROJECT_REF}"
   echo "Current value: $SUPABASE_PROJECT_REF"
   exit 1
