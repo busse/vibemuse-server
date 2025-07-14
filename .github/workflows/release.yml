@@ -27,15 +27,18 @@ jobs:
           # Disable interactive prompts and telemetry in CI
           echo "SUPABASE_CLI_DISABLE_TELEMETRY=true" >> $GITHUB_ENV
           echo "CI=true" >> $GITHUB_ENV
+          echo "SUPABASE_CLI_DISABLE_KEYRING=true" >> $GITHUB_ENV
           
           # Verify required environment variables are set
           if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
             echo "Error: SUPABASE_ACCESS_TOKEN environment variable is not set"
+            echo "Please ensure this secret is configured in your GitHub repository settings"
             exit 1
           fi
           
           if [ -z "$SUPABASE_DB_PASSWORD" ]; then
             echo "Error: SUPABASE_DB_PASSWORD environment variable is not set"
+            echo "Please ensure this secret is configured in your GitHub repository settings"
             exit 1
           fi
           
@@ -46,6 +49,7 @@ jobs:
         run: |
           if [ -z "$SUPABASE_PROJECT_ID" ]; then
             echo "Error: SUPABASE_PROJECT_ID environment variable is not set"
+            echo "Please ensure this secret is configured in your GitHub repository settings"
             exit 1
           fi
           
@@ -63,44 +67,162 @@ jobs:
           # Validate the final project ID format
           if [ ${#PROJECT_REF} -ne 20 ]; then
             echo "Error: SUPABASE_PROJECT_ID must be exactly 20 characters long, but is ${#PROJECT_REF}"
-            echo "Current value: $PROJECT_REF"
+            echo "Current value: '$PROJECT_REF'"
+            echo "Value length: ${#PROJECT_REF}"
+            exit 1
+          fi
+          
+          # Validate project ID format (alphanumeric lowercase)
+          if [[ ! "$PROJECT_REF" =~ ^[a-z0-9]{20}$ ]]; then
+            echo "Error: SUPABASE_PROJECT_ID must contain only lowercase letters and numbers"
+            echo "Current value: '$PROJECT_REF'"
             exit 1
           fi
           
           # Set the validated project reference for subsequent steps
           echo "SUPABASE_PROJECT_REF=$PROJECT_REF" >> $GITHUB_ENV
-          echo "SUPABASE_PROJECT_ID validation passed"
+          echo "✅ SUPABASE_PROJECT_ID validation passed: $PROJECT_REF"
 
       - name: Link to Supabase project
         run: |
-          # Link to the project with database password (warnings about keyring are expected in CI and can be ignored)
-          supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" || {
-            echo "Warning: Linking may have warnings about keyring service - this is normal in CI environments"
-            # Check if link was actually successful despite keyring warnings
-            if supabase status > /dev/null 2>&1; then
-              echo "Project link successful"
+          # Ensure we're in the correct directory and have proper permissions
+          echo "Current directory: $(pwd)"
+          echo "Supabase config exists: $(test -f supabase/config.toml && echo 'yes' || echo 'no')"
+          
+          # Link to the project with database password
+          # In CI environments, keyring errors are expected and can be safely ignored
+          echo "Linking to Supabase project: $SUPABASE_PROJECT_REF"
+          
+          # Use --create-project false to avoid accidentally creating a new project
+          LINK_OUTPUT=$(supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --create-project false 2>&1) || LINK_EXIT_CODE=$?
+          
+          echo "Supabase link output:"
+          echo "$LINK_OUTPUT"
+          
+          # Check if the link was successful despite keyring warnings
+          if supabase status > /dev/null 2>&1; then
+            echo "✅ Project link successful"
+            echo "Project status:"
+            supabase status
+          else
+            echo "❌ Failed to link to Supabase project"
+            echo "Link exit code: ${LINK_EXIT_CODE:-0}"
+            echo "Attempting to diagnose the issue..."
+            
+            # Try to get more information about the failure
+            if [ -n "$LINK_OUTPUT" ]; then
+              echo "Link output contained:"
+              echo "$LINK_OUTPUT"
+            fi
+            
+            # Check if it's a keyring-only issue
+            if echo "$LINK_OUTPUT" | grep -q "org.freedesktop.secrets"; then
+              echo "This appears to be a keyring-only issue. Trying alternative approach..."
+              # Alternative: create a simple .supabase/config.toml manually
+              mkdir -p .supabase
+              cat > .supabase/config.toml << EOF
+[project]
+ref = "$SUPABASE_PROJECT_REF"
+# Created by GitHub Actions CI
+EOF
+              echo "Created manual project configuration"
+              
+              # Test if this works
+              if supabase status > /dev/null 2>&1; then
+                echo "✅ Manual project configuration successful"
+              else
+                echo "❌ Manual project configuration failed"
+                exit 1
+              fi
             else
-              echo "Failed to link to Supabase project"
+              echo "❌ Link failed for reasons other than keyring"
               exit 1
             fi
-          }
+          fi
 
       # Ship every migration in supabase/migrations
       - name: Push database migrations
         run: |
           # Verify database connection before pushing
-          echo "Verifying database connection..."
+          echo "Verifying database connection and project status..."
           supabase status
-          # Push migrations with --yes flag to avoid prompts
-          supabase db push --yes || {
-            echo "Database push failed. Checking project status..."
-            supabase status
-            exit 1
-          }
+          
+          # Check if we have any migrations to push
+          if [ -d "supabase/migrations" ] && [ "$(ls -A supabase/migrations)" ]; then
+            echo "Found migrations in supabase/migrations:"
+            ls -la supabase/migrations/
+            
+            # Push migrations with --yes flag to avoid prompts
+            echo "Pushing database migrations..."
+            DB_PUSH_OUTPUT=$(supabase db push --yes 2>&1) || DB_PUSH_EXIT_CODE=$?
+            
+            echo "Database push output:"
+            echo "$DB_PUSH_OUTPUT"
+            
+            if [ "${DB_PUSH_EXIT_CODE:-0}" -ne 0 ]; then
+              echo "❌ Database push failed with exit code: ${DB_PUSH_EXIT_CODE}"
+              echo "Checking project status for debugging..."
+              supabase status
+              
+              # Try to get more detailed error information
+              echo "Attempting to diagnose database push failure..."
+              
+              # Check if it's a connection issue
+              if echo "$DB_PUSH_OUTPUT" | grep -q "connection"; then
+                echo "This appears to be a connection issue"
+                echo "Checking if we can connect to the database..."
+                supabase db ping || echo "Database ping failed"
+              fi
+              
+              # Check if it's a migration issue
+              if echo "$DB_PUSH_OUTPUT" | grep -q "migration"; then
+                echo "This appears to be a migration-related issue"
+                echo "Current migration status:"
+                supabase migration list || echo "Could not list migrations"
+              fi
+              
+              exit 1
+            else
+              echo "✅ Database migrations pushed successfully"
+            fi
+          else
+            echo "No migrations found in supabase/migrations/ - skipping migration push"
+          fi
 
       # (optional) regenerate TS types against the *remote* DB
       - name: Generate TypeScript types
-        run: supabase gen types typescript > types/supabase.ts
+        run: |
+          echo "Generating TypeScript types from remote database..."
+          
+          # Ensure types directory exists
+          mkdir -p types
+          
+          # Generate types with error handling
+          TYPE_GEN_OUTPUT=$(supabase gen types typescript 2>&1) || TYPE_GEN_EXIT_CODE=$?
+          
+          if [ "${TYPE_GEN_EXIT_CODE:-0}" -ne 0 ]; then
+            echo "❌ TypeScript type generation failed with exit code: ${TYPE_GEN_EXIT_CODE}"
+            echo "Type generation output:"
+            echo "$TYPE_GEN_OUTPUT"
+            
+            # Try to diagnose the issue
+            echo "Attempting to diagnose type generation failure..."
+            supabase status
+            
+            # Check if we can connect to the database
+            supabase db ping || echo "Database ping failed"
+            
+            exit 1
+          else
+            # Save the generated types to file
+            echo "$TYPE_GEN_OUTPUT" > types/supabase.ts
+            echo "✅ TypeScript types generated successfully"
+            echo "Generated types file size: $(wc -l < types/supabase.ts) lines"
+            
+            # Show a sample of the generated types for verification
+            echo "Sample of generated types:"
+            head -20 types/supabase.ts
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

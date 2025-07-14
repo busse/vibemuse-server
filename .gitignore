@@ -95,3 +95,7 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+# Test scripts (for development only)
+test-workflow.sh
+test-edge-cases.sh
