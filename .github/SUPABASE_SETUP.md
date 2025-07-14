@@ -49,7 +49,7 @@ types/
 2. **Safe PR testing**: Each PR uses fresh containers, never touches production
 3. **Automated deployments**: Main branch changes automatically deploy to cloud
 4. **Type safety**: TypeScript types stay in sync with database schema
-5. **Non-interactive CI**: All operations run automatically with `--no-confirm`
+5. **Non-interactive CI**: All operations run automatically with `--yes`
 
 ## Usage
 
@@ -60,6 +60,6 @@ types/
 
 ## Troubleshooting
 
-- If CLI asks for confirmation in CI, the `--no-confirm` flag forces non-interactive mode
+- If CLI asks for confirmation in CI, the `--yes` flag forces non-interactive mode
 - Multiple environments can be supported by duplicating workflows with different secrets
 - Seeds are automatically executed after `db reset` or can be run with `supabase db seed`

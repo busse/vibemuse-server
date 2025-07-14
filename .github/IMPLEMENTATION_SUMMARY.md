@@ -22,7 +22,7 @@ This document summarizes the implementation of the GitHub Actions workflows for 
 
 **Key Steps**:
 - ✅ Links to cloud project using `SUPABASE_PROJECT_ID` secret
-- ✅ Ships migrations to cloud database (`supabase db push --no-confirm`)
+- ✅ Ships migrations to cloud database (`supabase db push --yes`)
 - ✅ Regenerates TypeScript types against remote database
 - ✅ Builds and validates the project
 - ✅ Commits updated types back to repository
@@ -73,7 +73,7 @@ The following secrets must be configured in the repository:
 2. **Safe PR testing**: Each PR uses fresh containers, never touches production
 3. **Automated deployments**: Main branch changes automatically deploy to cloud
 4. **Type safety**: TypeScript types stay in sync with database schema
-5. **Non-interactive CI**: All operations run automatically with `--no-confirm`
+5. **Non-interactive CI**: All operations run automatically with `--yes`
 6. **Comprehensive testing**: Jest framework with TypeScript support
 7. **Proper linting**: ESLint handles both source and test files
 
