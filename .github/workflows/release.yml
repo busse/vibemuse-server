@@ -33,21 +33,22 @@ jobs:
           if [[ "$SUPABASE_PROJECT_ID" =~ ^https?://([^.]+)\.supabase\.co ]]; then
             EXTRACTED_PROJECT_ID="${BASH_REMATCH[1]}"
             echo "Extracted project ID from URL: $EXTRACTED_PROJECT_ID"
-            echo "SUPABASE_PROJECT_REF=$EXTRACTED_PROJECT_ID" >> $GITHUB_ENV
+            PROJECT_REF="$EXTRACTED_PROJECT_ID"
           else
             # Use the value as-is if it's not a URL
             echo "Using project ID as-is: $SUPABASE_PROJECT_ID"
-            echo "SUPABASE_PROJECT_REF=$SUPABASE_PROJECT_ID" >> $GITHUB_ENV
+            PROJECT_REF="$SUPABASE_PROJECT_ID"
           fi
           
           # Validate the final project ID format
-          if [ ${#SUPABASE_PROJECT_REF} -lt 8 ] || [ ${#SUPABASE_PROJECT_REF} -gt 30 ]; then
-            echo "Error: Project ID must be between 8 and 30 characters long"
-            echo "Current length: ${#SUPABASE_PROJECT_REF}"
-            echo "Current value: $SUPABASE_PROJECT_REF"
+          if [ ${#PROJECT_REF} -ne 20 ]; then
+            echo "Error: SUPABASE_PROJECT_ID must be exactly 20 characters long, but is ${#PROJECT_REF}"
+            echo "Current value: $PROJECT_REF"
             exit 1
           fi
           
+          # Set the validated project reference for subsequent steps
+          echo "SUPABASE_PROJECT_REF=$PROJECT_REF" >> $GITHUB_ENV
           echo "SUPABASE_PROJECT_ID validation passed"
 
       - name: Link to Supabase project

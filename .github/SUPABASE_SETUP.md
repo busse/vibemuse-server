@@ -8,7 +8,7 @@ Add these secrets to your repository: **Settings → Secrets → Actions**
 
 | Secret Name | Description | Where to Find |
 |-------------|-------------|---------------|
-| `SUPABASE_PROJECT_ID` | Project reference ID (8-30 chars) or full URL | Dashboard → Project URL `https://app.supabase.com/project/<ref>` or full URL |
+| `SUPABASE_PROJECT_ID` | Project reference ID (exactly 20 chars) or full URL | Dashboard → Project URL `https://app.supabase.com/project/<ref>` or full URL |
 | `SUPABASE_DB_PASSWORD` | Database password | Dashboard → **Settings → Database** → *Connection string* |
 | `SUPABASE_ACCESS_TOKEN` | Personal access token | Dashboard avatar → **Account Settings → Access Tokens → Generate new token** |
 | `SUPABASE_ANON_KEY` | Anonymous key (optional, for tests) | Dashboard → **Settings → API** |
