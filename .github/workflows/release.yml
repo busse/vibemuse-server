@@ -75,8 +75,8 @@ jobs:
       # Ship every migration in supabase/migrations
       - name: Push database migrations
         run: |
-          # Push migrations with non-interactive flag to avoid prompts
-          supabase db push --non-interactive || {
+          # Push migrations with --yes flag to avoid prompts
+          supabase db push --yes || {
             echo "Database push failed. Checking project status..."
             supabase status
             exit 1
