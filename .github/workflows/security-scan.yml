@@ -131,13 +131,19 @@ jobs:
     - name: Test security headers
       run: |
         echo "Testing security headers..."
-        curl -I http://localhost:3000/health
         
-        # Test for security headers
-        curl -I http://localhost:3000/health | grep -i "x-frame-options" || echo "WARNING: X-Frame-Options header missing"
-        curl -I http://localhost:3000/health | grep -i "x-content-type-options" || echo "WARNING: X-Content-Type-Options header missing"
-        curl -I http://localhost:3000/health | grep -i "content-security-policy" || echo "WARNING: Content-Security-Policy header missing"
-        curl -I http://localhost:3000/health | grep -i "strict-transport-security" || echo "WARNING: Strict-Transport-Security header missing"
+        # Get headers regardless of HTTP status code
+        headers=$(curl -I -s http://localhost:3000/health)
+        echo "Response headers received:"
+        echo "$headers"
+        
+        # Test for security headers (warnings only, not failures)
+        echo "$headers" | grep -i "x-frame-options" || echo "WARNING: X-Frame-Options header missing"
+        echo "$headers" | grep -i "x-content-type-options" || echo "WARNING: X-Content-Type-Options header missing"
+        echo "$headers" | grep -i "content-security-policy" || echo "WARNING: Content-Security-Policy header missing"
+        echo "$headers" | grep -i "strict-transport-security" || echo "WARNING: Strict-Transport-Security header missing"
+        
+        echo "Security header test completed"
 
   environment-validation:
     name: Environment Configuration Test
