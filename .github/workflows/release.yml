@@ -120,11 +120,9 @@ jobs:
               echo "This appears to be a keyring-only issue. Trying alternative approach..."
               # Alternative: create a simple .supabase/config.toml manually
               mkdir -p .supabase
-              cat > .supabase/config.toml << EOF
-[project]
-ref = "$SUPABASE_PROJECT_REF"
-# Created by GitHub Actions CI
-EOF
+              echo "[project]" > .supabase/config.toml
+              echo "ref = \"$SUPABASE_PROJECT_REF\"" >> .supabase/config.toml
+              echo "# Created by GitHub Actions CI" >> .supabase/config.toml
               echo "Created manual project configuration"
               
               # Test if this works

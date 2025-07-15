@@ -95,8 +95,11 @@ export const errorHandler = (
   if (error instanceof AppError) {
     appError = error;
   } else {
+    // Safe environment check
+    const isDevMode = process.env.NODE_ENV === 'development';
+    const errorMessage = (error && error.message) ? error.message : 'Unknown error';
     appError = new AppError(
-      env.NODE_ENV === 'development' ? error.message : 'Internal Server Error',
+      isDevMode ? errorMessage : 'Internal Server Error',
       500,
       false
     );
@@ -118,7 +121,8 @@ export const errorHandler = (
   };
   
   // Include additional details in development
-  if (env.NODE_ENV === 'development') {
+  const isDevMode = process.env.NODE_ENV === 'development';
+  if (isDevMode) {
     errorResponse.error.stack = appError.stack;
     if (appError.details) {
       errorResponse.error.details = appError.details;
@@ -184,7 +188,7 @@ export const databaseErrorHandler = (error: any, req: Request, res: Response, ne
         return;
       
       default:
-        if (env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === 'development') {
           console.log('Database error code:', error.code);
         }
     }
