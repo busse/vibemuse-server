@@ -94,7 +94,7 @@ jobs:
           echo "Linking to Supabase project: $SUPABASE_PROJECT_REF"
           
           # Use --create-project false to avoid accidentally creating a new project
-          LINK_OUTPUT=$(supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --create-project false 2>&1) || LINK_EXIT_CODE=$?
+          LINK_OUTPUT=$(supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" 2>&1) || LINK_EXIT_CODE=$?
           
           echo "Supabase link output:"
           echo "$LINK_OUTPUT"
