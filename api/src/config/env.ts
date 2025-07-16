@@ -68,8 +68,17 @@ export const validateEnv = (): z.infer<typeof envSchema> => {
   }
 };
 
-// Export validated environment
-export const env = validateEnv();
+// Lazy environment validation - only validate when accessed
+let _env: z.infer<typeof envSchema> | null = null;
+
+export const env = new Proxy({} as z.infer<typeof envSchema>, {
+  get(target, prop): any {
+    if (!_env) {
+      _env = validateEnv();
+    }
+    return _env[prop as keyof typeof _env];
+  }
+});
 
 // Security configuration
 export const SECURITY_CONFIG = {
