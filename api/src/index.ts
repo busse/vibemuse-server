@@ -1,8 +1,17 @@
 import { server } from './app';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 
-// Load environment variables
-dotenv.config({ path: '../.env.local' });
+// Load environment variables - try local file first, fallback to system environment
+const envPath = path.resolve(__dirname, '../../.env.local');
+if (fs.existsSync(envPath)) {
+  dotenv.config({ path: envPath });
+} else {
+  // In CI environments, environment variables are provided by the system
+  // No need to load from file, just use process.env
+  dotenv.config();
+}
 
 const PORT = process.env.PORT || 3000;
 

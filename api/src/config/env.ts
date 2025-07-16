@@ -1,8 +1,17 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 
-// Load environment variables
-dotenv.config({ path: '../.env.local' });
+// Load environment variables - try local file first, fallback to system environment
+const envPath = path.resolve(__dirname, '../../../.env.local');
+if (fs.existsSync(envPath)) {
+  dotenv.config({ path: envPath });
+} else {
+  // In CI environments, environment variables are provided by the system
+  // No need to load from file, just use process.env
+  dotenv.config();
+}
 
 // Environment validation schema
 const envSchema = z.object({
@@ -59,8 +68,17 @@ export const validateEnv = (): z.infer<typeof envSchema> => {
   }
 };
 
-// Export validated environment
-export const env = validateEnv();
+// Lazy environment validation - only validate when accessed
+let _env: z.infer<typeof envSchema> | null = null;
+
+export const env = new Proxy({} as z.infer<typeof envSchema>, {
+  get(target, prop): any {
+    if (!_env) {
+      _env = validateEnv();
+    }
+    return _env[prop as keyof typeof _env];
+  }
+});
 
 // Security configuration
 export const SECURITY_CONFIG = {
