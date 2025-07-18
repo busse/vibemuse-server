@@ -5,21 +5,23 @@ describe('Supabase Integration', () => {
     expect(true).toBe(true);
   });
 
-  it('should connect to database when Supabase is available', async () => {
-    // This test will validate that the database connection works
-    // when Supabase is available in the CI environment
+  it('should validate cloud Supabase configuration', async () => {
+    // This test validates that the Supabase environment is properly configured
+    // for cloud database usage only
     const supabaseUrl = process.env.SUPABASE_URL;
     
     if (supabaseUrl) {
-      const isLocalSupabase = supabaseUrl.includes('127.0.0.1');
+      // Ensure we're not using local development URLs
+      expect(supabaseUrl).not.toContain('127.0.0.1');
+      expect(supabaseUrl).not.toContain('localhost');
+      expect(supabaseUrl).not.toContain('54321');
       
-      if (isLocalSupabase) {
-        // Basic validation that we have the expected local setup
-        expect(supabaseUrl).toContain('54321');
-        expect(process.env.DATABASE_URL).toContain('54322');
+      // Ensure we're using proper cloud Supabase URLs
+      if (supabaseUrl.includes('.supabase.co')) {
+        expect(supabaseUrl).toMatch(/^https:\/\/[a-z0-9]{20}\.supabase\.co$/);
       }
     } else {
-      // If Supabase is not available, just pass the test
+      // If Supabase is not configured, just pass the test
       expect(true).toBe(true);
     }
   });

@@ -10,18 +10,10 @@
     "start": "cd api && npm start",
     "test": "cd api && npm test",
     "lint": "cd api && npm run lint",
-    "db:start": "./scripts/db-manager.sh start",
-    "db:stop": "./scripts/db-manager.sh stop",
-    "db:reset": "./scripts/db-manager.sh reset",
     "db:migrate": "./scripts/db-manager.sh migrate",
     "db:backup": "./scripts/db-manager.sh backup",
     "db:status": "./scripts/db-manager.sh status",
-    "db:types": "./scripts/db-manager.sh generate-types",
-    "supabase:start": "supabase db start",
-    "supabase:stop": "supabase db stop",
-    "supabase:reset": "supabase db reset",
-    "supabase:types": "supabase gen types typescript --local > types/supabase.gen.ts",
-    "supabase:types:remote": "supabase gen types typescript > types/supabase.ts"
+    "db:types": "./scripts/db-manager.sh generate-types"
   },
   "keywords": [
     "vibemuse",
