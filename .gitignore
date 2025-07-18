@@ -75,6 +75,7 @@ Thumbs.db
 .branches
 .temp
 .temp/
+.supabase/
 
 # Generated types (generated during CI, but we'll keep the template files)
 types/supabase.gen.ts
