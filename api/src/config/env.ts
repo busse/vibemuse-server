@@ -1,17 +1,9 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
-import path from 'path';
-import fs from 'fs';
 
-// Load environment variables - try local file first, fallback to system environment
-const envPath = path.resolve(__dirname, '../../../.env.local');
-if (fs.existsSync(envPath)) {
-  dotenv.config({ path: envPath });
-} else {
-  // In CI environments, environment variables are provided by the system
-  // No need to load from file, just use process.env
-  dotenv.config();
-}
+// Load environment variables from system environment only
+// In production/CI environments, environment variables are provided by the system
+dotenv.config();
 
 // Environment validation schema
 const envSchema = z.object({
@@ -28,9 +20,9 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32),
   ENCRYPTION_KEY: z.string().min(32),
   
-  // CORS configuration
-  FRONTEND_URL: z.string().url().default('http://localhost:5173'),
-  CORS_ORIGINS: z.string().default('http://localhost:5173,http://127.0.0.1:5173'),
+  // CORS configuration  
+  FRONTEND_URL: z.string().url(),
+  CORS_ORIGINS: z.string(),
   
   // Rate limiting
   RATE_LIMIT_WINDOW_MS: z.string().transform(Number).default(900000), // 15 minutes
