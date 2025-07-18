@@ -90,52 +90,48 @@ jobs:
           echo "Supabase config exists: $(test -f supabase/config.toml && echo 'yes' || echo 'no')"
           
           # Link to the project with database password
-          # In CI environments, keyring errors are expected and can be safely ignored
           echo "Linking to Supabase project: $SUPABASE_PROJECT_REF"
           
-          # Use --create-project false to avoid accidentally creating a new project
-          LINK_OUTPUT=$(supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" 2>&1) || LINK_EXIT_CODE=$?
+          # Capture both output and exit code
+          LINK_OUTPUT=$(supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" 2>&1)
+          LINK_EXIT_CODE=$?
           
           echo "Supabase link output:"
           echo "$LINK_OUTPUT"
+          echo "Link exit code: $LINK_EXIT_CODE"
           
-          # Check if the link was successful despite keyring warnings
-          if supabase status > /dev/null 2>&1; then
+          # Check if the link command itself succeeded
+          if [ $LINK_EXIT_CODE -eq 0 ]; then
             echo "✅ Project link successful"
-            echo "Project status:"
-            supabase status
+            
+            # Check if .supabase directory was created (better indicator than status)
+            if [ -d ".supabase" ] && [ -f ".supabase/config.toml" ]; then
+              echo "✅ Project configuration created"
+              cat .supabase/config.toml
+            else
+              echo "⚠️  .supabase directory not found, but link succeeded"
+            fi
+            
+            # Try status command but don't fail if it doesn't work
+            echo "Attempting to get project status..."
+            if supabase status 2>/dev/null; then
+              echo "✅ Status command successful"
+            else
+              echo "⚠️  Status command failed, but this may be normal in CI"
+              echo "The project link was successful based on the link command exit code"
+            fi
+            
           else
             echo "❌ Failed to link to Supabase project"
-            echo "Link exit code: ${LINK_EXIT_CODE:-0}"
-            echo "Attempting to diagnose the issue..."
-            
-            # Try to get more information about the failure
-            if [ -n "$LINK_OUTPUT" ]; then
-              echo "Link output contained:"
-              echo "$LINK_OUTPUT"
-            fi
+            echo "Link exit code: $LINK_EXIT_CODE"
             
             # Check if it's a keyring-only issue
             if echo "$LINK_OUTPUT" | grep -q "org.freedesktop.secrets"; then
-              echo "This appears to be a keyring-only issue. Trying alternative approach..."
-              # Alternative: create a simple .supabase/config.toml manually
-              mkdir -p .supabase
-              echo "[project]" > .supabase/config.toml
-              echo "ref = \"$SUPABASE_PROJECT_REF\"" >> .supabase/config.toml
-              echo "# Created by GitHub Actions CI" >> .supabase/config.toml
-              echo "Created manual project configuration"
-              
-              # Test if this works
-              if supabase status > /dev/null 2>&1; then
-                echo "✅ Manual project configuration successful"
-              else
-                echo "❌ Manual project configuration failed"
-                exit 1
-              fi
-            else
-              echo "❌ Link failed for reasons other than keyring"
-              exit 1
+              echo "This appears to be a keyring-only issue, but the link command itself failed"
             fi
+            
+            # Only exit with error if the link command actually failed
+            exit 1
           fi
 
       # Ship every migration in supabase/migrations
